@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
 
-namespace Demo.Models.Interfaces
-{
-    public interface INamedEntity : IIdEntity, IDatedEntity
-    {
+namespace Demo.Models.Interfaces {
+    public interface INamedEntity : IIdEntity, IDatedEntity {
         /// <summary>
         /// Наименование
         /// </summary>

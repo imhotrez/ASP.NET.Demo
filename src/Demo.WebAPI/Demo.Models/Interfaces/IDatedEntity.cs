@@ -1,10 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Demo.Models.Interfaces
-{
-    public interface IDatedEntity
-    {
+namespace Demo.Models.Interfaces {
+    public interface IDatedEntity {
         /// <summary>
         /// Дата создания записи
         /// </summary>

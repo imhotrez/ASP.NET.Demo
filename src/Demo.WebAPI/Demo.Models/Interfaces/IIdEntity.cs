@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Demo.Models.Interfaces
-{
+namespace Demo.Models.Interfaces {
     /// <summary>
     /// Базовый интерфейс для сущности EF
     /// </summary>
-    public interface IIdEntity
-    {
+    public interface IIdEntity {
         /// <summary>
         /// Идентификатор записи
         /// </summary>
