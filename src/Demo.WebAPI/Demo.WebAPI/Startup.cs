@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +25,10 @@ namespace Demo.WebAPI {
             services.AddControllers();
             services.AddSwaggerGen(
                 c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Demo.WebAPI", Version = "v1"}); });
+            services.AddMvc(options => {
+                options.EnableEndpointRouting = false;
+                options.Filters.Add(typeof(ExceptionFilter));
+            }).SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
