@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Helpers", "Demo.Helper
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Services", "Demo.Services\Demo.Services.csproj", "{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.SPA", "Demo.SPA\Demo.SPA.csproj", "{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
