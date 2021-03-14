@@ -7,7 +7,7 @@ using Demo.Models.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.DAL {
+namespace Demo.Services.DataAccess {
     public sealed class DemoContext : IdentityDbContext<AppUser, AppRole, long, AppUserClaim, AppUserRole, AppUserLogin,
         AppRoleClaim, AppUserToken> {
         public DemoContext(DbContextOptions options) : base(options) {

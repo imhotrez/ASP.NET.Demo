@@ -6,9 +6,13 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="10.1.1" />
+      <PackageReference Include="MailKit" Version="2.11.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.4" />
+      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Demo.Helpers\Demo.Helpers.csproj" />
       <ProjectReference Include="..\Demo.Models\Demo.Models.csproj" />
     </ItemGroup>
 

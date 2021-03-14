@@ -25,7 +25,7 @@ namespace Demo.Models.Filters {
         /// </summary>
         public int RecordsCount {
             get => _recordsCount;
-            set => _recordsCount = value < 1 ? 1 : (value > MaxRecordsCount ? MaxRecordsCount : value);
+            set => _recordsCount = value < 1 ? 1 : value > MaxRecordsCount ? MaxRecordsCount : value;
         }
 
         /// <summary>
