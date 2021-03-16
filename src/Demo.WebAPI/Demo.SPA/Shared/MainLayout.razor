@@ -1,17 +1,102 @@
-﻿@inherits LayoutComponentBase
+﻿@using Demo.SPA.Pages
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+<Layout>
+    <Header Class="header" Style="position: fixed; z-index: 1; width: 100%; padding: 0px;">
+        <PageHeader Class="site-page-header" Title="Hello World!" Subtitle="Custom Icon" BackIcon="@("menu")" OnBack="@(_ => open())">
+            <PageHeaderExtra>
+                <Dropdown Placement="@PlacementType.BottomRight">
+                    <Overlay>
+                        <Menu>
+                            <MenuItem>
+                                <NavLink class="nav-link" href="account">
+                                    Аккаунт
+                                </NavLink>
+                            </MenuItem>
+                            <MenuItem>
+                                <NavLink class="nav-link" href="login">
+                                    Выход
+                                </NavLink>
+                            </MenuItem>
+                        </Menu>
+                    </Overlay>
+                    <ChildContent>
+                        <Button>
+                            <Icon Type="user"/>
+                        </Button>
+                    </ChildContent>
+                </Dropdown>
+            </PageHeaderExtra>
+        </PageHeader>
+    </Header>
+    <Content Class="site-layout-content">
+        @Body
+    </Content>
+    <Footer id="footer" Style="text-align:center">Ant Design ©2018 Created by Ant UED</Footer>
+    <Drawer Closable="true" Visible="visible" Placement="left" Title='("Меню")' OnClose="_ => close()">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <Button Type="Default" @onclick="_ => close()">
+                        Home
+                    </Button>
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="counter">
+                    <Button Type="Default" @onclick="_ => close()">
+                        Counter
+                    </Button>
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="fetchdata">
+                    <Button Type="Default" Icon="search" @onclick="_ => close()">
+                        Search
+                    </Button>
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="myphotos">
+                    <Button Type="Default" @onclick="_ => close()" Icon="picture">
+                        Мои фотографии
+                    </Button>
+                </NavLink>
+            </li>
+        </ul>
+    </Drawer>
+</Layout>
 
-    <div class="main">
-        <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
-        </div>
+@code {
+    bool collapsed;
 
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
-</div>
+    void onCollapse(bool collapsed) {
+        Console.WriteLine(collapsed);
+        this.collapsed = collapsed;
+    }
+
+    bool visible = false;
+
+    void open() {
+        this.visible = true;
+    }
+
+    void close() {
+        this.visible = false;
+    }
+}
+
+
+<style>
+    .site-layout-content {
+        background: #fff;
+        padding: 72px 0;
+        min-height: 280px;
+    }
+    
+    #footer {
+        position: fixed; /* Фиксированное положение */
+        left: 0; bottom: 0; /* Левый нижний угол */
+        width: 100%; /* Ширина слоя */
+       }
+</style>
