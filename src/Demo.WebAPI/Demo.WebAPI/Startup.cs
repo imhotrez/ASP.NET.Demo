@@ -4,10 +4,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Demo.Helpers;
 using Demo.Models.Domain.Auth;
+using Demo.Services.BusinessLogic;
 using Demo.Services.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,14 @@ namespace Demo.WebAPI {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
+            services.AddGrpc();
+            services.AddCors(o => o.AddPolicy("AllowAll", builder => {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
+            }));
+
             #region Add Entity Framework and Identity Framework
 
             services.AddIdentity<AppUser, AppRole>()
@@ -57,13 +67,14 @@ namespace Demo.WebAPI {
             #endregion
 
             #region Аутентификация на основе JWT
-            
+
             #region Получение публичного ассиметричного ключа для подписывания токена
 
+            var curdir = Directory.GetCurrentDirectory();
             var signingPublicKeyPath = Path.Combine(
                 path1: Directory.GetCurrentDirectory(),
                 path2: "Keys",
-                path3: Configuration.GetValue<string>("Tokens:SigningPublicKey"));
+                path3: Configuration["Tokens:SigningPublicKey"]);
 
             var publicRsa = RSA.Create(2048);
 
@@ -78,7 +89,7 @@ namespace Demo.WebAPI {
             var encodingSecurityKeyPath = Path.Combine(
                 path1: Directory.GetCurrentDirectory(),
                 path2: "Keys",
-                path3: Configuration.GetValue<string>("Tokens:EncodingSecretKey"));
+                path3: Configuration["Tokens:EncodingSecretKey"]);
 
             var key = File.ReadAllText(encodingSecurityKeyPath);
 
@@ -129,7 +140,13 @@ namespace Demo.WebAPI {
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            
+            app.UseGrpcWeb();
+            app.UseCors();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllers();
+                endpoints.MapGrpcService<GreeterService>().EnableGrpcWeb().RequireCors("AllowAll");
+            });
             app.UseSerilogRequestLogging();
         }
     }

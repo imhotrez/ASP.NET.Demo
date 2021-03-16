@@ -1,1 +1,18 @@
 ﻿@page "/"
+@using Demo.Protos
+@inject Greeter.GreeterClient GreeterClient
+
+<h2>@message</h2>
+
+@code {
+
+    private string message;
+    protected override async Task OnInitializedAsync() {
+        var result = await GreeterClient.SayHelloAsync(new HelloRequest {
+            Name = "Eugene"
+        });
+
+        message = result.Message;
+    }
+
+}
