@@ -2,10 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace Demo.Models.Dto
-{
-    public class RefreshTokenRequest
-    {
+namespace Demo.Models.Dto {
+    public class RefreshTokenRequest {
         /// <summary>
         /// Уникальный идентификатор браузера
         /// </summary>

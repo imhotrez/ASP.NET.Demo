@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Demo.Protos;
+using Demo.SPA.Services;
 using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +13,8 @@ namespace Demo.SPA {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddAntDesign();
-            builder.Services.AddScoped(
-                sp => new HttpClient {BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)});
+            builder.Services.AddSingleton(
+                sp => new HttpClient {BaseAddress = new Uri("https://localhost:5001")});
             builder.Services
                 .AddGrpcClient<Greeter.GreeterClient>((services, options) =>
                 {
@@ -21,6 +22,8 @@ namespace Demo.SPA {
                 })
                 .ConfigurePrimaryHttpMessageHandler(
                     () => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));
+            builder.Services.AddSingleton<CommonStateService>();
+            builder.Services.AddSingleton<AuthService>();
             await builder.Build().RunAsync();
         }
     }

@@ -24,7 +24,7 @@ namespace Demo.WebAPI.Controllers {
         private readonly JsonWebTokenService _jsonWebTokenService;
         private readonly RefreshSessionService _refreshSessionService;
         private readonly EmailService _emailService;
-        private readonly PasswordGenerator _passwordGenerator;
+        private readonly PassGenService _passGenService;
 
         public AuthController(
             SignInManager<AppUser> signInManager,
@@ -33,14 +33,14 @@ namespace Demo.WebAPI.Controllers {
             RefreshSessionService refreshSessionService,
             IConfiguration configuration,
             EmailService emailService,
-            PasswordGenerator passwordGenerator) {
+            PassGenService passGenService) {
             _signInManager = signInManager;
             _userManager = userManager;
             _jsonWebTokenService = jsonWebTokenService;
             _refreshSessionService = refreshSessionService;
             _configuration = configuration;
             _emailService = emailService;
-            _passwordGenerator = passwordGenerator;
+            _passGenService = passGenService;
         }
 
         private async Task<Response<AuthResponse>> BuildAuthResponse(
@@ -294,7 +294,7 @@ namespace Demo.WebAPI.Controllers {
                 return View(new ResetPasswordViewModel {Message = "Пользователь не найден"});
             }
 
-            var newPassword = _passwordGenerator.Generate();
+            var newPassword = _passGenService.Generate();
 
             var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
 

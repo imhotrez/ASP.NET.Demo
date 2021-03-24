@@ -2,10 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace Demo.Models.Dto
-{
-    public class LoginRequest : RefreshTokenRequest
-    {
+namespace Demo.Models.Dto {
+    public class LoginRequest : RefreshTokenRequest {
         /// <summary>
         /// Адрес электронной почты
         /// </summary>

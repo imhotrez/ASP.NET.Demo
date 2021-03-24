@@ -1,6 +1,9 @@
 ﻿@page "/login"
-@using System.ComponentModel.DataAnnotations;
-@using System.Text.Json;
+@using Demo.Models.Dto
+@using Demo.SPA.Services
+@inject AuthService authService;
+@inject IJSRuntime JS;
+
 <style>
     .displayed {
         display: block;
@@ -12,20 +15,20 @@
 <div >
     <Card Class="displayed" Title="Вход в систему" Style="width:350px; vertical-align: center; horiz-align: center; text-align: center" Bordered="true">
         <Body>
-        <Form Model="@model"
+        <Form Model="@loginRequest"
+              ValidateOnChange="@true"
               Layout="@FormLayout.Vertical"
-              OnFinish="OnFinish"
-              OnFinishFailed="OnFinishFailed"
               LabelColSpan="16"
-              WrapperColSpan="16">
+              WrapperColSpan="16"
+              @ref="                    form">
             <FormItem Label="E-Mail" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px">
-                <Input @bind-Value="@context.Username"/>
+                <Input @bind-Value="@loginRequest.Email"/>
             </FormItem>
             <FormItem Label="Пароль" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px; margin-bottom: 35px">
-                <InputPassword @bind-Value="@context.Password"/>
+                <InputPassword @bind-Value="@loginRequest.Password"/>
             </FormItem>
             <FormItem WrapperColOffset="0" WrapperColSpan="0">
-                <Button Type="@ButtonType.Primary" HtmlType="submit" Style="width:300px;">
+                <Button Type="@ButtonType.Primary" HtmlType="submit" Style="width:300px;" @onclick="@LoginIn">
                     Войти
                 </Button>
             </FormItem>
@@ -34,7 +37,7 @@
                 <div>
                     <Row>
                         <Col Span="12">
-                            <Checkbox @bind-Value="context.RememberMe">Оставаться в системе</Checkbox>
+                            <Checkbox @bind-Value="@loginRequest.RememberMe">Оставаться в системе</Checkbox>
                         </Col>
                         <Col Span="12" style="margin-top: -7px; text-align: right;">
                             <NavLink class="nav-link" href="restorePassword">
@@ -54,26 +57,24 @@
     </Card>
 </div>
 
-
 @code
 {
-    public class Model {
-        [Required]
-        public string Username { get; set; }
+    private string fingerprint;
 
-        [Required]
-        public string Password { get; set; }
+    private readonly LoginRequest loginRequest = new() {
+        RememberMe = true
+    };
 
-        public bool RememberMe { get; set; } = true;
+    protected override async Task OnInitializedAsync() {
+        fingerprint = await JS.InvokeAsync<string>("initFingerprintJS");
     }
 
-    private Model model = new Model();
+    Form<LoginRequest> form;
 
-    private void OnFinish(EditContext editContext) {
-        Console.WriteLine($"Success:{JsonSerializer.Serialize(model)}");
-    }
-
-    private void OnFinishFailed(EditContext editContext) {
-        Console.WriteLine($"Failed:{JsonSerializer.Serialize(model)}");
+    private async Task LoginIn() {
+        if (form.Validate()) {
+            loginRequest.FingerPrint = fingerprint;
+            await authService.Login(loginRequest);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Demo.Models.Dto;
+﻿using System;
+using Demo.Models.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -13,24 +14,36 @@ namespace Demo.WebAPI {
         }
 
         public override void OnException(ExceptionContext context) {
-            context.Result = new InternalServerErrorObjectResult(new Response<object>(null) {
-                Error = {
-                    ErrorMessage = context.Exception.Message,
-                    StackTrace = context.Exception.StackTrace
-                }
+            context.Result = new InternalServerErrorObjectResult(new {
+                errorMessage = GetAllInnerExceptions(context.Exception),
+                stackTrace = context.Exception.StackTrace
             });
 
             _logger.LogError($"{context.Exception.Message} \n {context.Exception.StackTrace}");
-
             base.OnException(context);
         }
 
-        private class InternalServerErrorObjectResult : ObjectResult {
-            public InternalServerErrorObjectResult(object value) : base(value) {
+        private static string GetAllInnerExceptions(Exception exception, string exceptionMessages = "") {
+            while (true) {
+                var result = exceptionMessages == string.Empty
+                    ? exception.Message + Environment.NewLine
+                    : exceptionMessages + exception.Message + Environment.NewLine;
+
+                if (exception.InnerException == null) return result;
+                exception = exception.InnerException;
+                exceptionMessages = result;
+            }
+        }
+
+        private class InternalServerErrorObjectResult : ObjectResult
+        {
+            public InternalServerErrorObjectResult(object value) : base(value)
+            {
                 StatusCode = StatusCodes.Status500InternalServerError;
             }
 
-            public InternalServerErrorObjectResult() : this(null) {
+            public InternalServerErrorObjectResult() : this(null)
+            {
                 StatusCode = StatusCodes.Status500InternalServerError;
             }
         }

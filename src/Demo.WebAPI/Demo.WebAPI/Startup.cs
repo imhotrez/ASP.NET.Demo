@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using Demo.Helpers;
 using Demo.Models.Domain.Auth;
+using Demo.Services;
 using Demo.Services.BusinessLogic;
 using Demo.Services.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +24,7 @@ using Serilog;
 
 namespace Demo.WebAPI {
     public class Startup {
+        private const string DefaultPolicyName = "default";
         public Startup(IHostEnvironment env) {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -36,10 +39,11 @@ namespace Demo.WebAPI {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddGrpc();
-            services.AddCors(o => o.AddPolicy("AllowAll", builder => {
-                builder.AllowAnyOrigin()
+            services.AddCors(o => o.AddPolicy(DefaultPolicyName, builder => {
+                builder.WithOrigins("https://localhost:5011")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
+                    .AllowCredentials()
                     .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
             }));
 
@@ -120,6 +124,7 @@ namespace Demo.WebAPI {
 
             #endregion
 
+            services.AddServiceCollection();
             services.AddControllers();
             services.AddSwaggerGen(
                 c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Demo.WebAPI", Version = "v1"}); });
@@ -127,6 +132,14 @@ namespace Demo.WebAPI {
                 options.EnableEndpointRouting = false;
                 options.Filters.Add(typeof(ExceptionFilter));
             }).SetCompatibilityVersion(CompatibilityVersion.Latest);
+            
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+            
+            var mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -142,10 +155,10 @@ namespace Demo.WebAPI {
             app.UseAuthorization();
             
             app.UseGrpcWeb();
-            app.UseCors();
+            app.UseCors(DefaultPolicyName);
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
-                endpoints.MapGrpcService<GreeterService>().EnableGrpcWeb().RequireCors("AllowAll");
+                endpoints.MapGrpcService<GreeterService>().EnableGrpcWeb().RequireCors(DefaultPolicyName);
             });
             app.UseSerilogRequestLogging();
         }

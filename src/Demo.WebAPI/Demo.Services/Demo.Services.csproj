@@ -13,6 +13,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Demo.Helpers\Demo.Helpers.csproj" />
+      <ProjectReference Include="..\Demo.Models.Domain\Demo.Models.Domain.csproj" />
+      <ProjectReference Include="..\Demo.Models.Dto\Demo.Models.Dto.csproj" />
       <ProjectReference Include="..\Demo.Models\Demo.Models.csproj" />
       <ProjectReference Include="..\Demo.Protos\Demo.Protos.csproj" />
     </ItemGroup>

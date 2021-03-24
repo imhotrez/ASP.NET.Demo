@@ -3,8 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Demo.Services.BusinessLogic {
-    public class PasswordGenerator {
-        public PasswordGenerator() {
+    public class PassGenService {
+        public PassGenService() {
             Minimum = DefaultMinimum;
             Maximum = DefaultMaximum;
             ConsecutiveCharacters = false;

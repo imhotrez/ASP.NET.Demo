@@ -1,34 +1,40 @@
 ﻿@using Demo.SPA.Pages
+@using Demo.SPA.Services
 @inherits LayoutComponentBase
+@inject CommonStateService commonStateService
+@inject NavigationManager manager
 
 <Layout>
-    <Header Class="header" Style="position: fixed; z-index: 1; width: 100%; padding: 0px;">
-        <PageHeader Class="site-page-header" Title="Hello World!" Subtitle="Custom Icon" BackIcon="@("menu")" OnBack="@(_ => open())">
-            <PageHeaderExtra>
-                <Dropdown Placement="@PlacementType.BottomRight">
-                    <Overlay>
-                        <Menu>
-                            <MenuItem>
-                                <NavLink class="nav-link" href="account">
-                                    Аккаунт
-                                </NavLink>
-                            </MenuItem>
-                            <MenuItem>
-                                <NavLink class="nav-link" href="login">
-                                    Выход
-                                </NavLink>
-                            </MenuItem>
-                        </Menu>
-                    </Overlay>
-                    <ChildContent>
-                        <Button>
-                            <Icon Type="user"/>
-                        </Button>
-                    </ChildContent>
-                </Dropdown>
-            </PageHeaderExtra>
-        </PageHeader>
-    </Header>
+    <div hidden="@(!commonStateService.IsLoggedIn)">
+        <Header Class="header" Style="position: fixed; z-index: 1; width: 100%; padding: 0px;">
+            <PageHeader Class="site-page-header" Title="Hello World!" Subtitle="Custom Icon" BackIcon="@("menu")" OnBack="@(_ => open())">
+                <PageHeaderExtra>
+                    <Dropdown Placement="@PlacementType.BottomRight">
+                        <Overlay>
+                            <Menu>
+                                <MenuItem>
+                                    <NavLink class="nav-link" href="account">
+                                        Аккаунт
+                                    </NavLink>
+                                </MenuItem>
+                                <MenuItem>
+                                    <NavLink class="nav-link" href="login">
+                                        Выход
+                                    </NavLink>
+                                </MenuItem>
+                            </Menu>
+                        </Overlay>
+                        <ChildContent>
+                            <Button>
+                                <Icon Type="user"/>
+                            </Button>
+                        </ChildContent>
+                    </Dropdown>
+                </PageHeaderExtra>
+            </PageHeader>
+        </Header>
+    </div>
+
     <Content Class="site-layout-content">
         @Body
     </Content>
@@ -68,6 +74,15 @@
 </Layout>
 
 @code {
+
+    protected override async Task OnInitializedAsync() {
+        base.OnInitialized();
+        if (!commonStateService.IsLoggedIn) {
+            manager.NavigateTo("login");
+        }
+    }
+
+
     bool collapsed;
 
     void onCollapse(bool collapsed) {
@@ -84,6 +99,7 @@
     void close() {
         this.visible = false;
     }
+
 }
 
 
