@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Demo.Models.Dto
-{
+namespace Demo.Models.Dto {
     /// <summary>
     /// Страница результата
     /// </summary>
     /// <typeparam name="TEntity">Сущность</typeparam>
-    public class PageResult<TEntity> where TEntity : class
-    {
+    public class PageResult<TEntity> where TEntity : class {
         /// <summary>
         /// Общее количество
         /// </summary>
