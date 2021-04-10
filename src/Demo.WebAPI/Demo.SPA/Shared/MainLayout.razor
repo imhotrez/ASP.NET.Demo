@@ -1,8 +1,10 @@
-﻿@using Demo.SPA.Pages
-@using Demo.SPA.Services
+﻿@using Demo.SPA.Services
+@using Demo.Models.Dto
 @inherits LayoutComponentBase
-@inject CommonStateService commonStateService
-@inject NavigationManager manager
+@inject CommonStateService commonStateService;
+@inject NavigationManager manager;
+@inject AuthService authService;
+@inject IJSRuntime JS;
 
 <Layout>
     <div hidden="@(!commonStateService.IsLoggedIn)">
@@ -18,7 +20,7 @@
                                     </NavLink>
                                 </MenuItem>
                                 <MenuItem>
-                                    <NavLink class="nav-link" href="login">
+                                    <NavLink class="nav-link" href="login" @onclick="_ => Logout()">
                                         Выход
                                     </NavLink>
                                 </MenuItem>
@@ -49,20 +51,6 @@
                 </NavLink>
             </li>
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="counter">
-                    <Button Type="Default" @onclick="_ => close()">
-                        Counter
-                    </Button>
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="fetchdata">
-                    <Button Type="Default" Icon="search" @onclick="_ => close()">
-                        Search
-                    </Button>
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
                 <NavLink class="nav-link" href="myphotos">
                     <Button Type="Default" @onclick="_ => close()" Icon="picture">
                         Мои фотографии
@@ -76,12 +64,13 @@
 @code {
 
     protected override async Task OnInitializedAsync() {
-        base.OnInitialized();
-        if (!commonStateService.IsLoggedIn) {
-            manager.NavigateTo("login");
-        }
+        var refreshTokenRequest = new RefreshTokenRequest {
+            FingerPrint = await JS.InvokeAsync<string>("initFingerprintJS")
+        };
+        await authService.RefreshSession(refreshTokenRequest, default);
+        manager.NavigateTo(!commonStateService.IsLoggedIn ? "login" : "myphotos");
+        await base.OnInitializedAsync();
     }
-
 
     bool collapsed;
 
@@ -93,11 +82,16 @@
     bool visible = false;
 
     void open() {
-        this.visible = true;
+        visible = true;
     }
 
     void close() {
-        this.visible = false;
+        visible = false;
+    }
+
+    void Logout() {
+        authService.Logout(default);
+        commonStateService.AccessToken = null;
     }
 
 }
@@ -114,5 +108,5 @@
         position: fixed; /* Фиксированное положение */
         left: 0; bottom: 0; /* Левый нижний угол */
         width: 100%; /* Ширина слоя */
-       }
+    }
 </style>

@@ -1,11 +1,11 @@
 ﻿namespace Demo.Models.Dto {
     public class Response<T> {
-        public Response(T data, Error error = null) {
+        public Response(T data, WebError[] errors = null) {
             Data = data;
-            Error = error;
+            Errors = errors;
         }
 
         public T Data { get; }
-        public Error Error { get; }
+        public WebError[] Errors { get; }
     }
 }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace Demo.Models.Dto {
-    public class LoginRequest : RefreshTokenRequest {
+    public class RegisterRequest : RefreshTokenRequest {
         /// <summary>
         /// Адрес электронной почты
         /// </summary>
@@ -23,11 +23,12 @@ namespace Demo.Models.Dto {
         public string Password { get; set; }
 
         /// <summary>
-        /// Запомнить меня
+        /// Подтверждение пароля
         /// </summary>
         [Required]
-        [DisplayName("Запомнить меня")]
-        [JsonProperty("rememberMe")]
-        public bool RememberMe { get; set; }
+        [DisplayName("Подтверждение пароля")]
+        [Compare(nameof(Password))]
+        [JsonProperty("passwordConfirm")]
+        public string PasswordConfirm { get; set; }
     }
 }

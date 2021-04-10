@@ -3,6 +3,8 @@
 @using Demo.SPA.Services
 @inject AuthService authService;
 @inject IJSRuntime JS;
+@inject NavigationManager manager;
+@inject CommonStateService commonStateService
 
 <style>
     .displayed {
@@ -20,6 +22,7 @@
               Layout="@FormLayout.Vertical"
               LabelColSpan="16"
               WrapperColSpan="16"
+              Loading="loading"
               @ref="                    form">
             <FormItem Label="E-Mail" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px">
                 <Input @bind-Value="@loginRequest.Email"/>
@@ -59,22 +62,26 @@
 
 @code
 {
-    private string fingerprint;
-
+    bool loading = false;
     private readonly LoginRequest loginRequest = new() {
         RememberMe = true
     };
 
     protected override async Task OnInitializedAsync() {
-        fingerprint = await JS.InvokeAsync<string>("initFingerprintJS");
+        await base.OnInitializedAsync();
+        loginRequest.FingerPrint = await JS.InvokeAsync<string>("initFingerprintJS");
     }
 
     Form<LoginRequest> form;
 
     private async Task LoginIn() {
         if (form.Validate()) {
-            loginRequest.FingerPrint = fingerprint;
-            await authService.Login(loginRequest);
+            loading = true;
+            await authService.Login(loginRequest, default);
+            loading = false;
+            if (commonStateService.IsLoggedIn) {
+                manager.NavigateTo("myphotos");
+            }
         }
     }
 }

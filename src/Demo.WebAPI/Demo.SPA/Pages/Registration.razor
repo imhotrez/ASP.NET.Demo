@@ -1,6 +1,13 @@
 ﻿@page "/registration"
-@using System.ComponentModel.DataAnnotations;
-@using System.Text.Json;
+@using Demo.Models.Dto;
+@using Demo.SPA.Services
+@using System.Threading
+@inject IJSRuntime JS;
+@inject AuthService authService;
+@inject NotificationService notice;
+@inject CommonStateService commonStateService;
+@inject NavigationManager manager;
+
 <style>
     .displayed {
         display: block;
@@ -12,23 +19,23 @@
 <div >
     <Card Class="displayed" Title="Регистрация" Style="width:350px; vertical-align: center; horiz-align: center; text-align: center" Bordered="true">
         <Body>
-        <Form Model="@model"
-              Layout="@FormLayout.Vertical"
-              OnFinish="OnFinish"
-              OnFinishFailed="OnFinishFailed"
-              LabelColSpan="16"
-              WrapperColSpan="16">
+        <Form @ref="                    form"
+               Model="@registerRequest"
+               Layout="@FormLayout.Vertical"
+               Loading="loading"
+               LabelColSpan="16"
+               WrapperColSpan="16">
             <FormItem Label="E-Mail" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px">
-                <Input @bind-Value="@context.Username"/>
+                <Input @bind-Value="@context.Email"/>
             </FormItem>
             <FormItem Label="Пароль" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px;">
                 <InputPassword @bind-Value="@context.Password"/>
             </FormItem>
             <FormItem Label="Подтверждение пароя" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px; margin-bottom: 35px">
-                <InputPassword @bind-Value="@context.Password"/>
+                <InputPassword @bind-Value="@context.PasswordConfirm"/>
             </FormItem>
             <FormItem WrapperColOffset="0" WrapperColSpan="0">
-                <Button Type="@ButtonType.Primary" HtmlType="submit" Style="width:300px;">
+                <Button Type="@ButtonType.Primary" HtmlType="submit" Style="width:300px;" @onclick="@Register">
                     Зарегистрироваться
                 </Button>
             </FormItem>
@@ -45,23 +52,24 @@
 
 @code
 {
-    public class Model {
-        [Required]
-        public string Username { get; set; }
+    bool loading = false;
+    private readonly RegisterRequest registerRequest = new();
 
-        [Required]
-        public string Password { get; set; }
-
-        public bool RememberMe { get; set; } = true;
+    protected override async Task OnInitializedAsync() {
+        await base.OnInitializedAsync();
+        registerRequest.FingerPrint = await JS.InvokeAsync<string>("initFingerprintJS");
     }
 
-    private Model model = new Model();
+    Form<RegisterRequest> form;
 
-    private void OnFinish(EditContext editContext) {
-        Console.WriteLine($"Success:{JsonSerializer.Serialize(model)}");
-    }
-
-    private void OnFinishFailed(EditContext editContext) {
-        Console.WriteLine($"Failed:{JsonSerializer.Serialize(model)}");
+    private async Task Register() {
+        if (form.Validate()) {
+            loading = true;
+            await authService.Register(registerRequest, default(CancellationToken));
+            loading = false;
+            if (commonStateService.IsLoggedIn) {
+                manager.NavigateTo("myphotos");
+            }
+        }
     }
 }

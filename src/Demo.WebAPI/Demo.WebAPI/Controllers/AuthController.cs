@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.Models.Domain.Auth;
@@ -89,7 +90,7 @@ namespace Demo.WebAPI.Controllers {
             CancellationToken cancellationToken) {
             var authResponse = await LoginProcess(loginRequest, cancellationToken);
             HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application");
-            return Ok(authResponse);
+            return authResponse;
         }
 
         private async Task<ActionResult<Response<AuthResponse>>> LoginProcess(LoginRequest loginRequest,
@@ -207,11 +208,13 @@ namespace Demo.WebAPI.Controllers {
         public async Task<IActionResult> Logout(CancellationToken cancellationToken) {
             if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken) ||
                 string.IsNullOrEmpty(refreshToken)) {
-                ModelState.AddModelError("Authentication", "Требуется повторная аутентификация");
-                return BadRequest(ModelState);
+                throw new Exception("Требуется повторная аутентификация");
             }
 
             var session = await _refreshSessionService.GetSessionByGuid(refreshToken, cancellationToken);
+            if (session == null) {
+                throw new Exception("Требуется повторная аутентификация");
+            }
 
             await _refreshSessionService.Remove(session, cancellationToken);
             return Ok(ModelState);
@@ -237,7 +240,7 @@ namespace Demo.WebAPI.Controllers {
         [HttpPost]
         [Route("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<Response<AuthResponse>>> Register([FromBody] LoginRequest registerRequest,
+        public async Task<ActionResult<Response<AuthResponse>>> Register([FromBody] RegisterRequest registerRequest,
             CancellationToken cancellationToken) {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -248,9 +251,19 @@ namespace Demo.WebAPI.Controllers {
             };
 
             var identityResult = await _userManager.CreateAsync(user, registerRequest.Password);
-            if (!identityResult.Succeeded) return BadRequest(identityResult.Errors);
+            if (!identityResult.Succeeded)
+                return BadRequest(new Response<AuthResponse>(null,
+                    identityResult.Errors.Select(x => new WebError {ErrorMessage = x.Description})
+                        .ToArray()));
 
-            var authResponse = await LoginProcess(registerRequest, cancellationToken);
+            var loginModel = new LoginRequest {
+                Email = registerRequest.Email,
+                Password = registerRequest.Password,
+                FingerPrint = registerRequest.FingerPrint,
+                RememberMe = true
+            };
+
+            var authResponse = await LoginProcess(loginModel, cancellationToken);
             HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application");
             return Ok(authResponse);
         }

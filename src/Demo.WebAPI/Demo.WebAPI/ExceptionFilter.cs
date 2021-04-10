@@ -7,19 +7,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Demo.WebAPI {
     public class ExceptionFilter : ExceptionFilterAttribute {
-        private readonly ILogger<ExceptionFilter> _logger;
+        private readonly ILogger<ExceptionFilter> logger;
 
         public ExceptionFilter(ILogger<ExceptionFilter> logger) {
-            _logger = logger;
+            this.logger = logger;
         }
 
         public override void OnException(ExceptionContext context) {
-            context.Result = new InternalServerErrorObjectResult(new {
-                errorMessage = GetAllInnerExceptions(context.Exception),
-                stackTrace = context.Exception.StackTrace
-            });
+            context.Result = new InternalServerErrorObjectResult(
+                new Response<object>(null, new WebError[] {
+                    new WebError {
+                        ErrorMessage = GetAllInnerExceptions(context.Exception)
+                    }
+                }));
 
-            _logger.LogError($"{context.Exception.Message} \n {context.Exception.StackTrace}");
+            logger.LogError($"{context.Exception.Message} \n {context.Exception.StackTrace}");
             base.OnException(context);
         }
 
@@ -35,15 +37,12 @@ namespace Demo.WebAPI {
             }
         }
 
-        private class InternalServerErrorObjectResult : ObjectResult
-        {
-            public InternalServerErrorObjectResult(object value) : base(value)
-            {
+        private class InternalServerErrorObjectResult : ObjectResult {
+            public InternalServerErrorObjectResult(object value) : base(value) {
                 StatusCode = StatusCodes.Status500InternalServerError;
             }
 
-            public InternalServerErrorObjectResult() : this(null)
-            {
+            public InternalServerErrorObjectResult() : this(null) {
                 StatusCode = StatusCodes.Status500InternalServerError;
             }
         }

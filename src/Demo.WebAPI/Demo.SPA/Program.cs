@@ -16,14 +16,14 @@ namespace Demo.SPA {
             builder.Services.AddSingleton(
                 sp => new HttpClient {BaseAddress = new Uri("https://localhost:5001")});
             builder.Services
-                .AddGrpcClient<Greeter.GreeterClient>((services, options) =>
-                {
+                .AddGrpcClient<Greeter.GreeterClient>((services, options) => {
                     options.Address = new Uri("https://localhost:5001");
                 })
                 .ConfigurePrimaryHttpMessageHandler(
                     () => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));
             builder.Services.AddSingleton<CommonStateService>();
-            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<RestService>();
             await builder.Build().RunAsync();
         }
     }
