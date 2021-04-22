@@ -37,7 +37,7 @@ namespace Demo.SPA.Services {
             ExecutePost<TRequest, TResult>(string apiPath, TRequest request, CancellationToken cancellationToken)
             where TResult : class {
             try {
-                var jsonRequest = await JsonConvert.SerializeObjectAsync(request);
+                var jsonRequest = JsonConvert.SerializeObject(request);
                 var requestMessage = new HttpRequestMessage(HttpMethod.Post, apiPath) {
                     Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json")
                 };

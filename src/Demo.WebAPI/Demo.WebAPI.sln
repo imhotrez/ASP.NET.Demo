@@ -1,20 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.WebAPI", "Demo.WebAPI\Demo.WebAPI.csproj", "{42FDEB8C-CD66-4D2D-8652-0ECAB577C06B}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.WebAPI", "Demo.WebAPI\Demo.WebAPI.csproj", "{42FDEB8C-CD66-4D2D-8652-0ECAB577C06B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Models", "Demo.Models\Demo.Models.csproj", "{B3DBA8EB-543F-4EBB-BEFC-B6C836131D4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Models", "Demo.Models\Demo.Models.csproj", "{B3DBA8EB-543F-4EBB-BEFC-B6C836131D4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Helpers", "Demo.Helpers\Demo.Helpers.csproj", "{8B6272FA-3C7A-46EA-B797-EAC8F78D96C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Helpers", "Demo.Helpers\Demo.Helpers.csproj", "{8B6272FA-3C7A-46EA-B797-EAC8F78D96C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Services", "Demo.Services\Demo.Services.csproj", "{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Services", "Demo.Services\Demo.Services.csproj", "{CE740FA2-2FDC-4BF6-8BC3-F8F6043AB88B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.SPA", "Demo.SPA\Demo.SPA.csproj", "{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.SPA", "Demo.SPA\Demo.SPA.csproj", "{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Protos", "Demo.Protos\Demo.Protos.csproj", "{2940A9AE-8365-4811-9866-530826C1701D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Protos", "Demo.Protos\Demo.Protos.csproj", "{2940A9AE-8365-4811-9866-530826C1701D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Models.Domain", "Demo.Models.Domain\Demo.Models.Domain.csproj", "{B147CBB3-6866-42C6-ACF5-341B03170DF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Models.Domain", "Demo.Models.Domain\Demo.Models.Domain.csproj", "{B147CBB3-6866-42C6-ACF5-341B03170DF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Models.Dto", "Demo.Models.Dto\Demo.Models.Dto.csproj", "{785058C9-15E0-4E15-8229-4FCB37D0D9E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Models.Dto", "Demo.Models.Dto\Demo.Models.Dto.csproj", "{785058C9-15E0-4E15-8229-4FCB37D0D9E4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.FileProvider", "Demo.FileProvider\Demo.FileProvider.csproj", "{D50CDF0F-948B-4F33-9336-89B3AED070BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.gRPC.FileTransport", "Demo.gRPC.FileTransport\Demo.gRPC.FileTransport.csproj", "{4711D5E4-56F6-4A3B-BE19-CE44E7591A73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,5 +61,19 @@ Global
 		{785058C9-15E0-4E15-8229-4FCB37D0D9E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{785058C9-15E0-4E15-8229-4FCB37D0D9E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{785058C9-15E0-4E15-8229-4FCB37D0D9E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D50CDF0F-948B-4F33-9336-89B3AED070BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D50CDF0F-948B-4F33-9336-89B3AED070BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D50CDF0F-948B-4F33-9336-89B3AED070BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D50CDF0F-948B-4F33-9336-89B3AED070BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4711D5E4-56F6-4A3B-BE19-CE44E7591A73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4711D5E4-56F6-4A3B-BE19-CE44E7591A73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4711D5E4-56F6-4A3B-BE19-CE44E7591A73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4711D5E4-56F6-4A3B-BE19-CE44E7591A73}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6312B7CD-D143-46BE-8ADA-BDF3110DEC49}
 	EndGlobalSection
 EndGlobal

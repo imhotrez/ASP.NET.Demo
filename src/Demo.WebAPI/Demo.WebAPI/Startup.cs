@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
+using Demo.gRPC.FileTransport;
 using Demo.Helpers;
 using Demo.Models.Domain.Auth;
 using Demo.Services;
@@ -18,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
 
 namespace Demo.WebAPI {
@@ -124,9 +124,21 @@ namespace Demo.WebAPI {
             #endregion
 
             services.AddServiceCollection();
+
+            //services
+            //    .AddGrpcClient<FileTransportService.FileTransportServiceClient>((services, options) => {
+            //        options.Address = new Uri("https://localhost:5009");
+            //    })
+            //    .ConfigurePrimaryHttpMessageHandler(
+            //        () => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));
+
+            services.AddGrpcClient<FileTransportService.FileTransportServiceClient>(o =>
+            {
+                o.Address = new Uri("https://localhost:5009");
+            });
+
+
             services.AddControllers();
-            services.AddSwaggerGen(
-                c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Demo.WebAPI", Version = "v1"}); });
             services.AddMvc(options => {
                 options.EnableEndpointRouting = false;
                 options.Filters.Add(typeof(ExceptionFilter));
@@ -145,8 +157,6 @@ namespace Demo.WebAPI {
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Demo.WebAPI v1"));
             }
 
             app.UseHttpsRedirection();
@@ -157,7 +167,9 @@ namespace Demo.WebAPI {
             app.UseCors(DefaultPolicyName);
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
-                endpoints.MapGrpcService<GreeterService>().EnableGrpcWeb().RequireCors(DefaultPolicyName);
+                endpoints.MapGrpcService<GreeterService>()
+                         .EnableGrpcWeb()
+                         .RequireCors(DefaultPolicyName);
             });
             app.UseSerilogRequestLogging();
         }

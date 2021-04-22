@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Demo.gRPC.FileTransport";
+
+package FileTransport;
+
+
+service FileTransportService{
+	rpc FileDownLoad (FileInfo) returns (stream BytesContent);
+	rpc FileUpLoad (stream BytesContent) returns(Empty);
+}
+ 
+message FileInfo{
+	string fileName = 1;
+}
+ 
+message BytesContent{
+	string fileName = 1;
+	int32 Block = 2;
+	bytes content = 3;
+}
+message Empty {}
+message UploadResult{
+	bool UploadCompletedSuccessfully = 1;
+}
