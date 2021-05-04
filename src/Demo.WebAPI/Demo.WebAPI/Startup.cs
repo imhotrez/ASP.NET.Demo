@@ -6,9 +6,6 @@ using AutoMapper;
 using Demo.gRPC.FileTransport;
 using Demo.Helpers;
 using Demo.Models.Domain.Auth;
-using Demo.Services;
-using Demo.Services.BusinessLogic;
-using Demo.Services.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,8 +15,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using DemoContext = Demo.WebAPI.Services.DataAccess.DemoContext;
+using EmailService = Demo.WebAPI.Services.BusinessLogic.EmailService;
+using FileProviderService = Demo.WebAPI.Services.DataAccess.FileProviderService;
+using GreeterService = Demo.WebAPI.Services.BusinessLogic.GreeterService;
+using JsonWebTokenService = Demo.WebAPI.Services.BusinessLogic.JsonWebTokenService;
+using PassGenService = Demo.WebAPI.Services.BusinessLogic.PassGenService;
+using RefreshSessionService = Demo.WebAPI.Services.DataAccess.RefreshSessionService;
 
 namespace Demo.WebAPI {
     public class Startup {
@@ -123,14 +128,15 @@ namespace Demo.WebAPI {
 
             #endregion
 
-            services.AddServiceCollection();
-
-            //services
-            //    .AddGrpcClient<FileTransportService.FileTransportServiceClient>((services, options) => {
-            //        options.Address = new Uri("https://localhost:5009");
-            //    })
-            //    .ConfigurePrimaryHttpMessageHandler(
-            //        () => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));
+            services.AddSingleton<ILoggerFactory, LoggerFactory>();
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
+            services.AddScoped<EmailService>();
+            services.AddScoped<JsonWebTokenService>();
+            services.AddScoped<PassGenService>();
+            services.AddScoped<RefreshSessionService>();
+            services.AddScoped<RefreshSessionService>();
+            services.AddScoped<FileProviderService>();
 
             services.AddGrpcClient<FileTransportService.FileTransportServiceClient>(o =>
             {

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using Demo.Models.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
 namespace Demo.Models.Domain.Auth
 {
-    [Table(name: nameof(AppRole), Schema = "auth")]
     public class AppRole : IdentityRole<long>, INamedEntity
     {
         /// <summary>

@@ -15,6 +15,7 @@ namespace Demo.Services {
             serviceCollection.AddScoped<RefreshSessionService>();
             //serviceCollection.AddScoped<UserService>();
             serviceCollection.AddScoped<RefreshSessionService>();
+            serviceCollection.AddScoped<FileProviderService>();
             
             return serviceCollection;
         }

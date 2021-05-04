@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
+using Demo.Models.Domain.Image;
 using Demo.Models.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
-namespace Demo.Models.Domain.Auth
-{
-    [Table(name: nameof(AppUser), Schema = "auth")]
-    public class AppUser : IdentityUser<long>, IDatedEntity, IIdEntity
-    {
+namespace Demo.Models.Domain.Auth {
+    public class AppUser : IdentityUser<long>, IDatedEntity, IIdEntity {
         /// <summary>
         /// Фамилия
         /// </summary>
@@ -49,5 +46,7 @@ namespace Demo.Models.Domain.Auth
         public virtual ICollection<AppUserRole> UserRoles { get; set; }
 
         public virtual ICollection<RefreshSession> RefreshSessions { get; set; }
+
+        public virtual ICollection<Metadata> ImageMetadatas { get; set; }
     }
 }

@@ -6,20 +6,30 @@ package FileTransport;
 
 
 service FileTransportService{
-	rpc FileDownLoad (FileInfo) returns (stream BytesContent);
-	rpc FileUpLoad (stream BytesContent) returns(Empty);
+  rpc FileDownload (FileInfo) returns (stream BytesContentDownload);
+  rpc FileUpload (stream BytesContentUpload) returns(UploadResult);
 }
- 
+
 message FileInfo{
-	string fileName = 1;
+  int64 fileId = 1;
+  ImageType Type = 2;
 }
- 
-message BytesContent{
-	string fileName = 1;
-	int32 Block = 2;
-	bytes content = 3;
+
+enum ImageType{
+  Original = 0;
+  Preview = 1;
 }
-message Empty {}
+
+message BytesContentUpload{
+  string fileName = 1;
+  int64 databaseId = 2;
+  bytes content = 3;
+}
+
+message BytesContentDownload{
+  bytes content = 3;
+}
+
 message UploadResult{
-	bool UploadCompletedSuccessfully = 1;
+  bool UploadCompletedSuccessfully = 1;
 }

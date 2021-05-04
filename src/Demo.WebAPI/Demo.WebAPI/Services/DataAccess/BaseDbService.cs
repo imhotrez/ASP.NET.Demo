@@ -11,7 +11,7 @@ using Demo.Models.Filters;
 using Demo.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.Services.DataAccess {
+namespace Demo.WebAPI.Services.DataAccess {
     public abstract class BaseDbService<TEntity, TDto, TFilter>
         where TEntity : class, IIdEntity
         where TDto : class, IIdEntity

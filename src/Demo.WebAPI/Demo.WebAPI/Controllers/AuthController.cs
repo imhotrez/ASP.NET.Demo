@@ -4,14 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Demo.Models.Domain.Auth;
 using Demo.Models.Dto;
-using Demo.Services.BusinessLogic;
-using Demo.Services.DataAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using EmailService = Demo.WebAPI.Services.BusinessLogic.EmailService;
+using JsonWebTokenService = Demo.WebAPI.Services.BusinessLogic.JsonWebTokenService;
+using PassGenService = Demo.WebAPI.Services.BusinessLogic.PassGenService;
+using RefreshSessionService = Demo.WebAPI.Services.DataAccess.RefreshSessionService;
 
 namespace Demo.WebAPI.Controllers {
     [Produces("application/json")]

@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Demo.gRPC.FileTransport\Demo.gRPC.FileTransport.csproj" />
       <ProjectReference Include="..\Demo.Helpers\Demo.Helpers.csproj" />
       <ProjectReference Include="..\Demo.Models.Domain\Demo.Models.Domain.csproj" />
       <ProjectReference Include="..\Demo.Models.Dto\Demo.Models.Dto.csproj" />

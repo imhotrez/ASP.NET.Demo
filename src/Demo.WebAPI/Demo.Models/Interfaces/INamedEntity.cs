@@ -11,7 +11,7 @@ namespace Demo.Models.Interfaces {
         /// <summary>
         /// Приведённое к верхнему регистру, нормализованное имя
         /// </summary>
-        [DisplayName("Приведённое к верхнему регистру, нормализованное имя")]
+        [DisplayName("Приведённое к верхнему регистру нормализованное имя")]
         string NormalizedName { get; set; }
     }
 }

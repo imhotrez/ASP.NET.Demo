@@ -1,47 +1,42 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.IO;
+﻿using System.IO;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.gRPC.FileTransport;
-using Google.Protobuf;
+using Demo.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using FileProviderService = Demo.WebAPI.Services.DataAccess.FileProviderService;
 
 namespace Demo.WebAPI.Controllers {
     [ApiController]
     [Route("api/[controller]")]
     public class FileUploadTestController : ControllerBase {
-        private readonly FileTransportService.FileTransportServiceClient fileTransportServiceClient;
+        private readonly FileProviderService fileProviderService;
 
-        public FileUploadTestController(FileTransportService.FileTransportServiceClient fileTransportServiceClient) {
-            this.fileTransportServiceClient = fileTransportServiceClient;
+        public FileUploadTestController(FileProviderService fileProviderService) {
+            this.fileProviderService = fileProviderService;
         }
 
         [Route("upload")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Upload([FromForm] UploadImage uploadImage, CancellationToken cancellationToken) {
-            await using var memoryStream = new MemoryStream();
-            await uploadImage.image.CopyToAsync(memoryStream, cancellationToken);
-            var byteString = ByteString.CopyFrom(memoryStream.ToArray());
-            var bytesContent = new BytesContent {
-                Content = byteString,
-                Block = 10,
-                FileName = "Name"
-            };
-
-            var result = fileTransportServiceClient.FileUpLoad();
-            await result.RequestStream.WriteAsync(bytesContent);
-            await result.RequestStream.CompleteAsync();
-            var response = await result;
-            return Ok(response);
+        public async Task<IActionResult> Upload([FromForm] UploadImageDto uploadImage,
+            CancellationToken cancellationToken) {
+            var state = ModelState;
+            // TODO Реализовать получение ID пользователя
+            var result = await fileProviderService.SaveFile(uploadImage, 1, cancellationToken);
+            return Ok(result);
         }
-    }
 
-    public class UploadImage {
-        /// <summary>
-        /// Тело документа
-        /// </summary>
-        public IFormFile image { get; set; }
+        [Route("download/{id}")]
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Download(long id, CancellationToken cancellationToken) {
+            var state = ModelState;
+            // TODO Реализовать получение ID пользователя
+            var result = await fileProviderService.DownloadFile(id, ImageType.Preview, cancellationToken);
+            var stream = new MemoryStream(result.Body);
+            return File(stream, "application/octet-stream", result.Name);
+        }
     }
 }

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Demo.Models.Interfaces;
 
 namespace Demo.Models.Domain.Auth
 {
-    [Table(name: nameof(AppRole), Schema = "auth")]
     public class RefreshSession : IIdEntity, IDatedEntity
     {
         public long Id { get; set; }

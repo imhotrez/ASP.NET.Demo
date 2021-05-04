@@ -11,15 +11,15 @@ using DemoContext = Demo.WebAPI.Services.DataAccess.DemoContext;
 namespace Demo.WebAPI.Migrations
 {
     [DbContext(typeof(DemoContext))]
-    [Migration("20210324174047_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210422142459_AddMetadata")]
+    partial class AddMetadata
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.4")
+                .HasAnnotation("ProductVersion", "5.0.5")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Demo.Models.Domain.Auth.AppRole", b =>
@@ -279,6 +279,35 @@ namespace Demo.WebAPI.Migrations
                     b.ToTable("RefreshSessions", "auth");
                 });
 
+            modelBuilder.Entity("Demo.Models.Domain.Image.Metadata", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ModelBuilders", "image");
+                });
+
             modelBuilder.Entity("Demo.Models.Domain.Auth.AppRoleClaim", b =>
                 {
                     b.HasOne("Demo.Models.Domain.Auth.AppRole", "Role")
@@ -353,6 +382,17 @@ namespace Demo.WebAPI.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Demo.Models.Domain.Image.Metadata", b =>
+                {
+                    b.HasOne("Demo.Models.Domain.Auth.AppUser", "User")
+                        .WithMany("ImageMetadatas")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Demo.Models.Domain.Auth.AppRole", b =>
                 {
                     b.Navigation("RoleClaims");
@@ -363,6 +403,8 @@ namespace Demo.WebAPI.Migrations
             modelBuilder.Entity("Demo.Models.Domain.Auth.AppUser", b =>
                 {
                     b.Navigation("Claims");
+
+                    b.Navigation("ImageMetadatas");
 
                     b.Navigation("Logins");
 

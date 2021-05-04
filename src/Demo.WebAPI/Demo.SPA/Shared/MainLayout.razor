@@ -4,7 +4,7 @@
 @inject CommonStateService commonStateService;
 @inject NavigationManager manager;
 @inject AuthService authService;
-@inject IJSRuntime JS;
+@inject IJSRuntime js;
 
 <Layout>
     <div hidden="@(!commonStateService.IsLoggedIn)">
@@ -65,7 +65,7 @@
 
     protected override async Task OnInitializedAsync() {
         var refreshTokenRequest = new RefreshTokenRequest {
-            FingerPrint = await JS.InvokeAsync<string>("initFingerprintJS")
+            FingerPrint = await js.InvokeAsync<string>("initFingerprintJS")
         };
         await authService.RefreshSession(refreshTokenRequest, default);
         manager.NavigateTo(!commonStateService.IsLoggedIn ? "login" : "myphotos");
