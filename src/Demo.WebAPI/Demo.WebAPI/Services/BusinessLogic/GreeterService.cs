@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Demo.Protos;
+using Demo.gRPC.SPA.FileTransport;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Demo.Models.Domain.Auth;
 using Demo.Models.Dto;
+using Demo.Models.Domain.Image;
 
 namespace Demo.WebAPI {
     public class MappingProfile : Profile {
@@ -26,6 +27,13 @@ namespace Demo.WebAPI {
             CreateMap<AppRoleDto, AppRole>()
                 .ForMember(appRole => appRole.Id, p => p.MapFrom(appRoleDto => appRoleDto.Id))
                 .ForMember(appRole => appRole.Name, p => p.MapFrom(appRoleDto => appRoleDto.Name));
+            CreateMap<Metadata, Metadata>()
+                .ForMember(meta => meta.Id, p => p.MapFrom(metaDto => metaDto.Id))
+                .ForMember(meta => meta.Name, p => p.MapFrom(metaDto => metaDto.Name))
+                .ForMember(meta => meta.CreateDate, p => p.MapFrom(metaDto => metaDto.CreateDate))
+                .ForMember(meta => meta.NormalizedName, p => p.MapFrom(metaDto => metaDto.NormalizedName))
+                .ForMember(meta => meta.UpdateDate, p => p.MapFrom(metaDto => metaDto.UpdateDate))
+                .ForMember(meta => meta.UserId, p => p.MapFrom(metaDto => metaDto.UserId));
         }
     }
 }

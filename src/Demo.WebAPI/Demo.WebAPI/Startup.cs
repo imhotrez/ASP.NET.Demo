@@ -4,8 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
 using Demo.gRPC.FileTransport;
+using Demo.gRPC.SPA.FileTransport;
 using Demo.Helpers;
 using Demo.Models.Domain.Auth;
+using Demo.WebAPI.Services.BusinessLogic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,7 +35,6 @@ namespace Demo.WebAPI {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -137,12 +138,12 @@ namespace Demo.WebAPI {
             services.AddScoped<RefreshSessionService>();
             services.AddScoped<RefreshSessionService>();
             services.AddScoped<FileProviderService>();
+            services.AddScoped<ImageTransport>();
 
             services.AddGrpcClient<FileTransportService.FileTransportServiceClient>(o =>
             {
                 o.Address = new Uri("https://localhost:5009");
             });
-
 
             services.AddControllers();
             services.AddMvc(options => {
@@ -176,6 +177,9 @@ namespace Demo.WebAPI {
                 endpoints.MapGrpcService<GreeterService>()
                          .EnableGrpcWeb()
                          .RequireCors(DefaultPolicyName);
+                endpoints.MapGrpcService<ImageTransport>()
+                    .EnableGrpcWeb()
+                    .RequireCors(DefaultPolicyName);
             });
             app.UseSerilogRequestLogging();
         }

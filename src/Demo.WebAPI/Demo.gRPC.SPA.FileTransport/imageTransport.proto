@@ -1,0 +1,31 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Demo.gRPC.SPA.FileTransport";
+
+package imageTransport;
+
+// Транспорт изображений от клиента до сервера
+service ImageTransportService{
+  rpc FileDownload (UserInfo) returns (stream BytesContentDownload);
+  rpc FileUpload (stream BytesContentUpload) returns(UploadResult);
+}
+
+message UserInfo{
+  int64 UserId = 1;
+}
+
+message BytesContentUpload{
+  string fileName = 1;
+  int64 databaseId = 2;
+  bytes content = 3;
+}
+
+message BytesContentDownload{
+  string fileName = 1;
+  bytes content = 2;
+  bool isPreview = 3;
+}
+
+message UploadResult{
+  bool UploadCompletedSuccessfully = 1;
+}

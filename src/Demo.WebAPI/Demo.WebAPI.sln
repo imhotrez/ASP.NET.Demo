@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Helpers", "Demo.Helper
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.SPA", "Demo.SPA\Demo.SPA.csproj", "{AD913344-FB54-4DD7-90B2-864F4ECB3DE8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Protos", "Demo.Protos\Demo.Protos.csproj", "{2940A9AE-8365-4811-9866-530826C1701D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.gRPC.SPA.FileTransport", "Demo.gRPC.SPA.FileTransport\Demo.gRPC.SPA.FileTransport.csproj", "{2940A9AE-8365-4811-9866-530826C1701D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Models.Domain", "Demo.Models.Domain\Demo.Models.Domain.csproj", "{B147CBB3-6866-42C6-ACF5-341B03170DF2}"
 EndProject

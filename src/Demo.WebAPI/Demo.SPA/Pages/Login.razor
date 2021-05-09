@@ -2,7 +2,7 @@
 @using Demo.Models.Dto
 @using Demo.SPA.Services
 @inject AuthService authService;
-@inject IJSRuntime JS;
+@inject IJSRuntime js;
 @inject NavigationManager manager;
 @inject CommonStateService commonStateService
 
@@ -23,7 +23,7 @@
               LabelColSpan="16"
               WrapperColSpan="16"
               Loading="loading"
-              @ref="                    form">
+              @ref="form">
             <FormItem Label="E-Mail" WrapperColOffset="0" WrapperColSpan="0" Style="margin-top: -10px">
                 <Input @bind-Value="@loginRequest.Email"/>
             </FormItem>
@@ -63,13 +63,14 @@
 @code
 {
     bool loading = false;
+
     private readonly LoginRequest loginRequest = new() {
         RememberMe = true
     };
 
     protected override async Task OnInitializedAsync() {
         await base.OnInitializedAsync();
-        loginRequest.FingerPrint = await JS.InvokeAsync<string>("initFingerprintJS");
+        loginRequest.FingerPrint = await js.InvokeAsync<string>("initFingerprintJS");
     }
 
     Form<LoginRequest> form;

@@ -90,10 +90,9 @@
     }
 
     void Logout() {
-        authService.Logout(default);
+        authService?.Logout(default);
         commonStateService.AccessToken = null;
     }
-
 }
 
 

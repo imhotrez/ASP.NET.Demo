@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option csharp_namespace = "Demo.Protos";
+option csharp_namespace = "Demo.gRPC.SPA.FileTransport";
 
-package greet;
+package greeter;
 
 // The greeting service definition.
 service Greeter {
@@ -19,3 +19,4 @@ message HelloRequest {
 message HelloReply {
   string message = 1;
 }
+

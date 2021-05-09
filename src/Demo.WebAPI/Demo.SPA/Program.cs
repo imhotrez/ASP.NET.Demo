@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Demo.Protos;
+using Demo.gRPC.SPA.FileTransport;
 using Demo.SPA.Services;
 using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -17,6 +17,12 @@ namespace Demo.SPA {
                 sp => new HttpClient {BaseAddress = new Uri("https://localhost:5001")});
             builder.Services
                 .AddGrpcClient<Greeter.GreeterClient>((services, options) => {
+                    options.Address = new Uri("https://localhost:5001");
+                })
+                .ConfigurePrimaryHttpMessageHandler(
+                    () => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));
+            builder.Services
+                .AddGrpcClient<ImageTransportService.ImageTransportServiceClient>((services, options) => {
                     options.Address = new Uri("https://localhost:5001");
                 })
                 .ConfigurePrimaryHttpMessageHandler(

@@ -1,4 +1,8 @@
 ﻿@page "/myphotos"
+@using Demo.gRPC.SPA.FileTransport
+@using Grpc.Core
+@using System.Threading
+@inject ImageTransportService.ImageTransportServiceClient imageTransportServiceClient
 
 <div>
     <Row>
@@ -8,33 +12,18 @@
         <Col Span="3">
             <div style="width: max-content; align-content: center">
                 <ImagePreviewGroup>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
-                    <Image Width="200"
-                           Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"
-                           PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
+                   @foreach (var image in images) {
+                       <Image Width="200"
+                              Src=@image.Source
+                       />
+                   }
+                        
+                   
+                    @* @for (int i = 0; i < 50; i++) { *@
+                    @*        <Image Width="200" *@
+                    @*               Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" *@
+                    @*               PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"/> *@
+                    @* } *@
                 </ImagePreviewGroup>
             </div>
         </Col>
@@ -43,5 +32,23 @@
 
 
 @code {
+    List<ImageData> images;
+    
+    protected override async Task OnInitializedAsync(){
+        images = new List<ImageData>();
+        
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1}); 
+        while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
+            images.Add(new ImageData {
+                FileName = call.ResponseStream.Current.FileName,
+                Source =  $"data:image/jpg;base64, {call.ResponseStream.Current.Content.ToBase64()}"
+            });
+            StateHasChanged();     
+        }
+    }
 
+    class ImageData {
+        public string FileName { get; set; }
+        public string Source { get; set; }
+    }
 }
