@@ -138,7 +138,7 @@ namespace Demo.WebAPI.Services.DataAccess {
                         trackedEntityEntry.Property(propName).IsModified = true;
                     });
                     await DbContext.SaveChangesAsync(cancellationToken);
-                    return dto;
+                    return Mapper.Map<TDto>(entity);
                 }
 
                 DbSet.Update(entity);
@@ -148,7 +148,7 @@ namespace Demo.WebAPI.Services.DataAccess {
                 if (removeTrackingEntries) entry.State = EntityState.Detached;
             }
 
-            return dto;
+            return Mapper.Map<TDto>(entity);
         }
 
         #region Remove

@@ -1,6 +1,5 @@
 ﻿@page "/myphotos"
 @using Demo.gRPC.SPA.FileTransport
-@using System.Threading
 @using Grpc.Core
 @inject ImageTransportService.ImageTransportServiceClient imageTransportServiceClient
 @inject MessageService _message
@@ -21,9 +20,7 @@
                 </div>
             </Upload>
             <Modal Visible="previewVisible"
-                   Title="Прев"
-                   OnCancel="() => previewVisible = false"
-                   OnOk="() => { Console.WriteLine('k'); }">
+                   OnCancel="() => previewVisible = false">
                 <img style="width: 100%" src="@imgUrl"/>
             </Modal>
         </Col>
