@@ -1,29 +1,40 @@
 ﻿@page "/myphotos"
 @using Demo.gRPC.SPA.FileTransport
-@using Grpc.Core
 @using System.Threading
+@using Grpc.Core
 @inject ImageTransportService.ImageTransportServiceClient imageTransportServiceClient
+@inject MessageService _message
 
 <div>
     <Row>
-        <Col Span="24" style="background-color: #1b6ec2;align-content: center">col-24</Col>
+        <Col Span="24" style="background-color: #1b6ec2;align-content: center">
+            <Upload Action="https://localhost:5001/api/FileUploadTest/upload"
+                    Name="body"
+                    @bind-FileList="fileList"
+                    ShowButton="fileList?.Count < 8"
+                    ListType="picture-card"
+                    OnPreview="(file) => { Console.WriteLine(file.FileName); Console.WriteLine(file.Url); previewVisible = true; previewTitle = file.FileName; imgUrl = file.Url; }"
+                    OnChange="HandleChange">
+                <div>
+                    <Icon Type="plus"></Icon>
+                    <div className="ant-upload-text">Upload</div>
+                </div>
+            </Upload>
+            <Modal Visible="previewVisible"
+                   Title="Прев"
+                   OnCancel="() => previewVisible = false"
+                   OnOk="() => { Console.WriteLine('k'); }">
+                <img style="width: 100%" src="@imgUrl"/>
+            </Modal>
+        </Col>
     </Row>
     <Row>
         <Col Span="3">
             <div style="width: max-content; align-content: center">
                 <ImagePreviewGroup>
-                   @foreach (var image in images) {
-                       <Image Width="200"
-                              Src=@image.Source
-                       />
-                   }
-                        
-                   
-                    @* @for (int i = 0; i < 50; i++) { *@
-                    @*        <Image Width="200" *@
-                    @*               Src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" *@
-                    @*               PreviewSrc="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?x-oss-process=image/blur,r_50,s_50/quality,q_1/resize,m_mfit,h_200,w_200"/> *@
-                    @* } *@
+                    @foreach (var image in images) {
+                        <Image Width="200" Src=@image.Source/>
+                    }
                 </ImagePreviewGroup>
             </div>
         </Col>
@@ -33,17 +44,19 @@
 
 @code {
     List<ImageData> images;
-    
-    protected override async Task OnInitializedAsync(){
+
+    protected override async Task OnInitializedAsync() {
         images = new List<ImageData>();
-        
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1}); 
-        while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
+
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1});
+
+        await foreach (var response in call.ResponseStream.ReadAllAsync()) {
+            Console.WriteLine(call.ResponseStream.Current.FileName);
             images.Add(new ImageData {
-                FileName = call.ResponseStream.Current.FileName,
-                Source =  $"data:image/jpg;base64, {call.ResponseStream.Current.Content.ToBase64()}"
+                FileName = response.FileName,
+                Source = $"data:image/jpg;base64, {response.Content.ToBase64()}"
             });
-            StateHasChanged();     
+            StateHasChanged();
         }
     }
 
@@ -51,4 +64,40 @@
         public string FileName { get; set; }
         public string Source { get; set; }
     }
+
+    bool previewVisible = false;
+    string previewTitle = string.Empty;
+    string imgUrl = string.Empty;
+
+    List<UploadFileItem> fileList = new() {};
+
+    static void HandleChange(UploadInfo fileinfo) {
+        if (fileinfo.File.State == UploadState.Success) {
+            fileinfo.File.Url = fileinfo.File.ObjectURL;
+        }
+    }
+
+    public class ResponseModel {
+        public string name { get; set; }
+
+        public string status { get; set; }
+
+        public string url { get; set; }
+
+        public string thumbUrl { get; set; }
+    }
+
 }
+
+<style>
+    /* you can make up upload button and sample style by using stylesheets */
+    .ant-upload-select-picture-card i {
+        color: #999;
+        font-size: 32px;
+    }
+
+    .ant-upload-select-picture-card .ant-upload-text {
+        margin-top: 8px;
+        color: #666;
+    }
+</style>

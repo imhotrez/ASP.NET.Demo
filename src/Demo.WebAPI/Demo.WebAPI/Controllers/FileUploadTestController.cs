@@ -1,10 +1,12 @@
-﻿using System.IO;
+﻿using System.ComponentModel.DataAnnotations;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.gRPC.FileTransport;
 using Demo.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using FileProviderService = Demo.WebAPI.Services.DataAccess.FileProviderService;
 
 namespace Demo.WebAPI.Controllers {
@@ -25,7 +27,9 @@ namespace Demo.WebAPI.Controllers {
             var state = ModelState;
             // TODO Реализовать получение ID пользователя
             var result = await fileProviderService.SaveFile(uploadImage, 1, cancellationToken);
-            return Ok(result);
+            return Ok("Good"
+                //result
+                );
         }
 
         [Route("download/{id}")]

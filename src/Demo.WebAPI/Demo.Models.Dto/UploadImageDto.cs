@@ -10,12 +10,13 @@ namespace Demo.Models.Dto {
         [Required]
         public IFormFile Body { get; set; }
 
+        // Не пригодилось 
         /// <summary>
         /// Имя файла
         /// </summary>
-        [Required]
-        [RegularExpression(".*\\.(png|bmp|emf|exif|gif|icon|jpe?g|tiff?|webp)$", 
-            ErrorMessage = "Убедитесь, что загружаемый файл имеет одно из следующих расширений: png, bmp, emf, exif, gif, icon, jpe?g, tiff?, webp")]
-        public string FileName { get; set; }
+        // [Required]
+        // [RegularExpression(".*\\.(png|bmp|emf|exif|gif|icon|jpe?g|tiff?|webp)$", 
+        //     ErrorMessage = "Убедитесь, что загружаемый файл имеет одно из следующих расширений: png, bmp, emf, exif, gif, icon, jpe?g, tiff?, webp")]
+        // public string FileName { get; set; }
     }
 }

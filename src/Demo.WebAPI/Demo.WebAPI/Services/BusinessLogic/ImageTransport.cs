@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.gRPC.FileTransport;
@@ -29,7 +28,7 @@ namespace Demo.WebAPI.Services.BusinessLogic {
                 .ToArrayAsync(CancellationToken.None);
 
             foreach (var imageId in imagesIds) {
-                var result = await fileProviderService.DownloadFile(imageId, ImageType.Original, CancellationToken.None);
+                var result = await fileProviderService.DownloadFile(imageId, ImageType.Preview, CancellationToken.None);
                 await responseStream.WriteAsync(new BytesContentDownload {
                     Content = ByteString.CopyFrom(result.Body),
                     FileName = result.Name,

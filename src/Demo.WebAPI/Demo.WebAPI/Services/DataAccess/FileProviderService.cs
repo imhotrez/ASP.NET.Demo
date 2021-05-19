@@ -26,8 +26,8 @@ namespace Demo.WebAPI.Services.DataAccess {
             try {
                 var metadata = new Metadata {
                     UserId = userId,
-                    Name = uploadImage.FileName,
-                    NormalizedName = uploadImage.FileName.ToUpperInvariant(),
+                    Name = uploadImage.Body.FileName,
+                    NormalizedName = uploadImage.Body.FileName.ToUpperInvariant(),
                 };
 
                 metadata = await Save(metadata, null, cancellationToken);
@@ -36,7 +36,7 @@ namespace Demo.WebAPI.Services.DataAccess {
                 await uploadImage.Body.CopyToAsync(memoryStream, cancellationToken);
                 var byteString = ByteString.CopyFrom(memoryStream.ToArray());
                 var bytesContent = new BytesContentUpload {
-                    Content = byteString, DatabaseId = metadata.Id, FileName = uploadImage.FileName
+                    Content = byteString, DatabaseId = metadata.Id, FileName = uploadImage.Body.FileName
                 };
 
                 var fileUpLoadProcess = fileTransportServiceClient.FileUpload(cancellationToken: cancellationToken);
