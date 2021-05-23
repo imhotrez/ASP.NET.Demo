@@ -12,6 +12,7 @@ service ImageTransportService{
 
 message UserInfo{
   int64 UserId = 1;
+  bool isPreview = 2;
 }
 
 message BytesContentUpload{
@@ -21,9 +22,10 @@ message BytesContentUpload{
 }
 
 message BytesContentDownload{
-  string fileName = 1;
-  bytes content = 2;
-  bool isPreview = 3;
+  int64 fileId = 1;
+  string fileName = 2;
+  bytes content = 3;
+  bool isPreview = 4;
 }
 
 message UploadResult{

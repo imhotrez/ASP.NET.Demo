@@ -1,16 +1,30 @@
 ﻿@page "/myphotos"
 @using Demo.gRPC.SPA.FileTransport
+@using Demo.SPA.Models
 @using Grpc.Core
+@using System.Collections.Concurrent
 @inject ImageTransportService.ImageTransportServiceClient imageTransportServiceClient
-@inject MessageService _message
+@inject MessageService message
 
+<style>
+    /* you can make up upload button and sample style by using stylesheets */
+    .ant-upload-select-picture-card i {
+        color: #999;
+        font-size: 32px;
+    }
+
+    .ant-upload-select-picture-card .ant-upload-text {
+        margin-top: 8px;
+        color: #666;
+    }
+</style>
 <div>
     <Row>
         <Col Span="24" style="background-color: #1b6ec2;align-content: center">
             <Upload Action="https://localhost:5001/api/FileUploadTest/upload"
                     Name="body"
-                    @bind-FileList="fileList"
-                    ShowButton="fileList?.Count < 8"
+                    @bind-FileList="filesList"
+                    ShowButton="filesList?.Count < 8"
                     ListType="picture-card"
                     OnPreview="(file) => { Console.WriteLine(file.FileName); Console.WriteLine(file.Url); previewVisible = true; previewTitle = file.FileName; imgUrl = file.Url; }"
                     OnChange="HandleChange">
@@ -30,7 +44,11 @@
             <div style="width: max-content; align-content: center">
                 <ImagePreviewGroup>
                     @foreach (var image in images) {
-                        <Image Width="200" Src=@image.Source/>
+                        if (string.IsNullOrEmpty(image.Value.Original)) {
+                            <Image Width="200" Src=@image.Value.Preview/>    
+                        } else {
+                            <Image Width="200" Src=@image.Value.Preview PreviewSrc=@image.Value.Original/>
+                        }
                     }
                 </ImagePreviewGroup>
             </div>
@@ -40,61 +58,59 @@
 
 
 @code {
-    List<ImageData> images;
-
+    ConcurrentDictionary<long, ImageData> images = new();
+    
     protected override async Task OnInitializedAsync() {
-        images = new List<ImageData>();
-
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1});
-
-        await foreach (var response in call.ResponseStream.ReadAllAsync()) {
-            Console.WriteLine(call.ResponseStream.Current.FileName);
-            images.Add(new ImageData {
-                FileName = response.FileName,
-                Source = $"data:image/jpg;base64, {response.Content.ToBase64()}"
-            });
-            StateHasChanged();
-        }
+        await LoadPreview();
+        await LoadOriginal();
     }
 
-    class ImageData {
-        public string FileName { get; set; }
-        public string Source { get; set; }
+    private async Task LoadOriginal() {
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = false});
+        await foreach (var response in call.ResponseStream.ReadAllAsync()) {
+            Console.WriteLine($"[Оригинал]-{call.ResponseStream.Current.FileName}, Id={response.FileId}");
+            var newImage = new ImageData {
+                FileId = response.FileId,
+                FileName = response.FileName,
+                Original = $"data:image/jpg;base64, {response.Content.ToBase64()}"
+            };
+            if (!images.TryGetValue(response.FileId, out var image)) continue;
+            newImage.Preview = image.Preview;
+            if (images.TryUpdate(response.FileId, newImage, image)) {
+                Console.WriteLine("Успешно обновлен в словаре");
+                StateHasChanged();
+            } else {
+                Console.WriteLine("Неудача обновления в словаре");
+            }
+        }
+    }
+    
+    private async Task LoadPreview() {
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = true});
+        await foreach (var response in call.ResponseStream.ReadAllAsync()) {
+            Console.WriteLine($"[Превью]-{call.ResponseStream.Current.FileName}, Id={response.FileId}");
+            if (images.TryAdd(response.FileId, new ImageData {
+                FileId = response.FileId,
+                FileName = response.FileName,
+                Preview = $"data:image/jpg;base64, {response.Content.ToBase64()}"
+            })) {
+                Console.WriteLine("Удачно добавлен в словарь");
+                StateHasChanged();
+            } else {
+                Console.WriteLine("Ошибка добавления в словарь");
+            }
+        }
     }
 
     bool previewVisible = false;
     string previewTitle = string.Empty;
     string imgUrl = string.Empty;
 
-    List<UploadFileItem> fileList = new() {};
+    List<UploadFileItem> filesList = new();
 
-    static void HandleChange(UploadInfo fileinfo) {
-        if (fileinfo.File.State == UploadState.Success) {
-            fileinfo.File.Url = fileinfo.File.ObjectURL;
+    static void HandleChange(UploadInfo fileInfo) {
+        if (fileInfo.File.State == UploadState.Success) {
+            fileInfo.File.Url = fileInfo.File.ObjectURL;
         }
     }
-
-    public class ResponseModel {
-        public string name { get; set; }
-
-        public string status { get; set; }
-
-        public string url { get; set; }
-
-        public string thumbUrl { get; set; }
-    }
-
 }
-
-<style>
-    /* you can make up upload button and sample style by using stylesheets */
-    .ant-upload-select-picture-card i {
-        color: #999;
-        font-size: 32px;
-    }
-
-    .ant-upload-select-picture-card .ant-upload-text {
-        margin-top: 8px;
-        color: #666;
-    }
-</style>
