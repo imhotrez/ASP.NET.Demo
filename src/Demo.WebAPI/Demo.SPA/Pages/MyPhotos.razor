@@ -3,8 +3,10 @@
 @using Demo.SPA.Models
 @using Grpc.Core
 @using System.Collections.Concurrent
+@using Demo.SPA.Services
 @inject ImageTransportService.ImageTransportServiceClient imageTransportServiceClient
 @inject MessageService message
+@inject CommonStateService commonStateService;
 
 <style>
     /* you can make up upload button and sample style by using stylesheets */
@@ -20,7 +22,7 @@
 </style>
 <div>
     <Row>
-        <Col Span="24" style="background-color: #1b6ec2;align-content: center">
+        <Col Span="24" style="align-content: center">
             <Upload Action="https://localhost:5001/api/FileUploadTest/upload"
                     Name="body"
                     @bind-FileList="filesList"
@@ -30,7 +32,7 @@
                     OnChange="HandleChange">
                 <div>
                     <Icon Type="plus"></Icon>
-                    <div className="ant-upload-text">Upload</div>
+                    <div className="ant-upload-text">Загрузить</div>
                 </div>
             </Upload>
             <Modal Visible="previewVisible"
@@ -41,13 +43,13 @@
     </Row>
     <Row>
         <Col Span="3">
-            <div style="width: max-content; align-content: center">
+            <div style="width: calc(100vw - 20px); overflow: auto; height: calc(100vh - 350px); margin: 10px">
                 <ImagePreviewGroup>
-                    @foreach (var image in images) {
-                        if (string.IsNullOrEmpty(image.Value.Original)) {
-                            <Image Width="200" Src=@image.Value.Preview/>    
+                    @foreach (var (_, value) in images) {
+                        if (string.IsNullOrEmpty(value.Original)) {
+                            <Image Width="200" Src=@value.Preview/>
                         } else {
-                            <Image Width="200" Src=@image.Value.Preview PreviewSrc=@image.Value.Original/>
+                            <Image Width="200" Src=@value.Preview PreviewSrc=@value.Original/>
                         }
                     }
                 </ImagePreviewGroup>
@@ -56,19 +58,25 @@
     </Row>
 </div>
 
-
 @code {
     ConcurrentDictionary<long, ImageData> images = new();
-    
+    List<UploadFileItem> filesList = new();
+    bool previewVisible = false;
+    string previewTitle = string.Empty;
+    string imgUrl = string.Empty;
+
     protected override async Task OnInitializedAsync() {
+        commonStateService.OnChange += StateHasChanged;
         await LoadPreview();
         await LoadOriginal();
     }
 
     private async Task LoadOriginal() {
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = false});
+        var headers = new Grpc.Core.Metadata {
+            {"Authorization", $"Bearer {commonStateService.AccessToken}"}
+        };
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = false}, headers);
         await foreach (var response in call.ResponseStream.ReadAllAsync()) {
-            Console.WriteLine($"[Оригинал]-{call.ResponseStream.Current.FileName}, Id={response.FileId}");
             var newImage = new ImageData {
                 FileId = response.FileId,
                 FileName = response.FileName,
@@ -77,24 +85,26 @@
             if (!images.TryGetValue(response.FileId, out var image)) continue;
             newImage.Preview = image.Preview;
             if (images.TryUpdate(response.FileId, newImage, image)) {
-                Console.WriteLine("Успешно обновлен в словаре");
                 StateHasChanged();
             } else {
                 Console.WriteLine("Неудача обновления в словаре");
             }
         }
     }
-    
+
     private async Task LoadPreview() {
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = true});
+        Console.WriteLine($"JWT:{commonStateService.AccessToken}");
+        var headers = new Grpc.Core.Metadata {
+            {"Authorization", $"Bearer {commonStateService.AccessToken}"}
+        };
+
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = true}, headers);
         await foreach (var response in call.ResponseStream.ReadAllAsync()) {
-            Console.WriteLine($"[Превью]-{call.ResponseStream.Current.FileName}, Id={response.FileId}");
             if (images.TryAdd(response.FileId, new ImageData {
                 FileId = response.FileId,
                 FileName = response.FileName,
                 Preview = $"data:image/jpg;base64, {response.Content.ToBase64()}"
             })) {
-                Console.WriteLine("Удачно добавлен в словарь");
                 StateHasChanged();
             } else {
                 Console.WriteLine("Ошибка добавления в словарь");
@@ -102,15 +112,11 @@
         }
     }
 
-    bool previewVisible = false;
-    string previewTitle = string.Empty;
-    string imgUrl = string.Empty;
-
-    List<UploadFileItem> filesList = new();
-
     static void HandleChange(UploadInfo fileInfo) {
         if (fileInfo.File.State == UploadState.Success) {
             fileInfo.File.Url = fileInfo.File.ObjectURL;
         }
     }
+
+    public void Dispose() { commonStateService.OnChange -= StateHasChanged; }
 }

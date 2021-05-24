@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
@@ -48,7 +49,8 @@ namespace Demo.WebAPI {
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
-                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
+                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding", "Authorization")
+                    ;
             }));
 
             #region Add Entity Framework and Identity Framework
@@ -125,6 +127,15 @@ namespace Demo.WebAPI {
                     ClockSkew = TimeSpan.FromSeconds(5)
                 };
             });
+            
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
+                {
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                    policy.RequireClaim(ClaimTypes.Name);
+                });
+            });
 
             #endregion
 
@@ -167,10 +178,11 @@ namespace Demo.WebAPI {
 
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseAuthorization();
-            
-            app.UseGrpcWeb();
             app.UseCors(DefaultPolicyName);
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseGrpcWeb();
+            
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
                 endpoints.MapGrpcService<GreeterService>()

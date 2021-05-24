@@ -30,7 +30,8 @@ namespace Demo.SPA {
             builder.Services.AddSingleton<CommonStateService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<RestService>();
-            await builder.Build().RunAsync();
+            var host = builder.Build();
+            await host.RunAsync();
         }
     }
 }

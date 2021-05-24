@@ -1,6 +1,21 @@
-﻿namespace Demo.SPA.Services {
+﻿using System;
+
+namespace Demo.SPA.Services {
     public class CommonStateService {
-        public string AccessToken { get; set; }
+        private string accessToken;
+
+        public string AccessToken {
+            get => accessToken;
+            set {
+                accessToken = value;
+                NotifyStateChanged();
+            }
+        }
+
         public bool IsLoggedIn => !string.IsNullOrEmpty(AccessToken);
+
+        public event Action OnChange;
+
+        private void NotifyStateChanged() => OnChange?.Invoke();
     }
 }

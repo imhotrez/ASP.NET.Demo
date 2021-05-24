@@ -6,6 +6,7 @@ using Demo.gRPC.SPA.FileTransport;
 using Demo.WebAPI.Services.DataAccess;
 using Google.Protobuf;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using BytesContentDownload = Demo.gRPC.SPA.FileTransport.BytesContentDownload;
 
@@ -19,9 +20,11 @@ namespace Demo.WebAPI.Services.BusinessLogic {
             this.dbContext = dbContext;
         }
 
+        [Authorize]
         public override async Task FileDownload(UserInfo request,
             IServerStreamWriter<BytesContentDownload> responseStream,
             ServerCallContext context) {
+            
             var imagesIds = await this.dbContext.Users
                 .Include(u => u.ImageMetadatas)
                 .SelectMany(u => u.ImageMetadatas.Select(x => x.Id))

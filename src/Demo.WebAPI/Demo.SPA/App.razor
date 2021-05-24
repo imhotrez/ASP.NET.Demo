@@ -1,3 +1,10 @@
+@using Demo.SPA.Services
+@using Demo.Models.Dto
+@inject CommonStateService commonStateService;
+@inject IJSRuntime js;
+@inject AuthService authService;
+@inject NavigationManager manager;
+
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
@@ -9,3 +16,18 @@
     </NotFound>
 </Router>
 <AntContainer />
+
+@code{
+
+    protected override async Task OnInitializedAsync() {
+        commonStateService.OnChange += StateHasChanged;
+        var refreshTokenRequest = new RefreshTokenRequest {
+            FingerPrint = await js.InvokeAsync<string>("initFingerprintJS")
+        };
+        await authService.RefreshSession(refreshTokenRequest, default);
+        manager.NavigateTo(!commonStateService.IsLoggedIn ? "login" : "myphotos");
+        await base.OnInitializedAsync();
+    }
+    
+    public void Dispose() { commonStateService.OnChange -= StateHasChanged; }
+}

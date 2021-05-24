@@ -13,7 +13,6 @@ namespace Demo.SPA.Services {
     public class RestService {
         private readonly HttpClient httpClient;
         private readonly NotificationService notice;
-
         public RestService(HttpClient httpClient, NotificationService notice) {
             this.httpClient = httpClient;
             this.notice = notice;

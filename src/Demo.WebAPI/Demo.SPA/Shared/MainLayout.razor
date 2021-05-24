@@ -9,7 +9,7 @@
 <Layout>
     <div hidden="@(!commonStateService.IsLoggedIn)">
         <Header Class="header" Style="position: fixed; z-index: 1; width: 100%; padding: 0px;">
-            <PageHeader Class="site-page-header" Title="Hello World!" Subtitle="Custom Icon" BackIcon="@("menu")" OnBack="@(_ => open())">
+            <PageHeader Class="site-page-header" Title="" Subtitle="" BackIcon="@("menu")" OnBack="@(_ => open())">
                 <PageHeaderExtra>
                     <Dropdown Placement="@PlacementType.BottomRight">
                         <Overlay>
@@ -63,13 +63,9 @@
 
 @code {
 
-    protected override async Task OnInitializedAsync() {
-        var refreshTokenRequest = new RefreshTokenRequest {
-            FingerPrint = await js.InvokeAsync<string>("initFingerprintJS")
-        };
-        await authService.RefreshSession(refreshTokenRequest, default);
+    protected override void OnInitialized() {
         manager.NavigateTo(!commonStateService.IsLoggedIn ? "login" : "myphotos");
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
     bool collapsed;
@@ -81,18 +77,16 @@
 
     bool visible = false;
 
-    void open() {
-        visible = true;
-    }
+    void open() { visible = true; }
 
-    void close() {
-        visible = false;
-    }
+    void close() { visible = false; }
 
     void Logout() {
         authService?.Logout(default);
         commonStateService.AccessToken = null;
     }
+
+    public void Dispose() { commonStateService.OnChange -= StateHasChanged; }
 }
 
 
