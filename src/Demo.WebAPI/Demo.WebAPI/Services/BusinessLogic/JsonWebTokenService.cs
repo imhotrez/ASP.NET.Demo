@@ -19,15 +19,44 @@ using JwtConstants = Microsoft.IdentityModel.JsonWebTokens.JwtConstants;
 
 namespace Demo.WebAPI.Services.BusinessLogic {
     public class JsonWebTokenService {
-        private readonly IConfiguration _configuration;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<AppRole> _roleManager;
+        private readonly IConfiguration configuration;
+        private readonly UserManager<AppUser> userManager;
+        private readonly RoleManager<AppRole> roleManager;
 
         public JsonWebTokenService(IConfiguration configuration, UserManager<AppUser> userManager,
             RoleManager<AppRole> roleManager) {
-            _configuration = configuration;
-            _userManager = userManager;
-            _roleManager = roleManager;
+            this.configuration = configuration;
+            this.userManager = userManager;
+            this.roleManager = roleManager;
+        }
+
+        public string GetClaimValue(string jwt, string claimKey) {
+            var signingPublicKeyPath = Path.Combine(
+                path1: Directory.GetCurrentDirectory(),
+                path2: "Keys",
+                path3: configuration["Tokens:SigningPublicKey"]);
+
+            var publicRsa = RSA.Create(2048);
+
+            publicRsa.FromXmlFile(signingPublicKeyPath);
+
+            var signingPublicKey = new RsaSecurityKey(publicRsa);
+            
+            var tokenValidationParameters = new TokenValidationParameters {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingPublicKey,
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Tokens:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = configuration["Tokens:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromSeconds(5)
+            };
+            
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(jwt, tokenValidationParameters, out _);
+            var result = principal.Claims.FirstOrDefault(c => c.Type == claimKey)?.Value; 
+            return result;
         }
 
         public async Task<string> GetToken(AppUser appUser, CancellationToken cancellationToken,
@@ -39,7 +68,7 @@ namespace Demo.WebAPI.Services.BusinessLogic {
             var keyPath = Path.Combine(
                 path1: Directory.GetCurrentDirectory(),
                 path2: "Keys",
-                path3: _configuration.GetValue<string>("Tokens:SigningPrivateKey"));
+                path3: configuration.GetValue<string>("Tokens:SigningPrivateKey"));
 
             var privateRsa = RSA.Create(2048);
 
@@ -58,9 +87,9 @@ namespace Demo.WebAPI.Services.BusinessLogic {
             keyPath = Path.Combine(
                 path1: Directory.GetCurrentDirectory(),
                 path2: "Keys",
-                path3: _configuration.GetValue<string>("Tokens:EncodingSecretKey"));
+                path3: configuration.GetValue<string>("Tokens:EncodingSecretKey"));
 
-            var key = File.ReadAllText(keyPath);
+            var key = await File.ReadAllTextAsync(keyPath, cancellationToken);
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 
             var encryptingCredentials = new EncryptingCredentials(
@@ -72,21 +101,33 @@ namespace Demo.WebAPI.Services.BusinessLogic {
 
             #region Claims
 
-            var userRoles = await _userManager.GetRolesAsync(user: appUser);
-            var allRoles = await _roleManager.Roles.ToArrayAsync(cancellationToken);
+            var userRoles = await userManager.GetRolesAsync(user: appUser);
+            var allRoles = await roleManager.Roles.ToArrayAsync(cancellationToken);
             var dic = allRoles.ToDictionary(x => x.Name, y => userRoles.Contains(y.Name));
-            var claim = new Claim("roles", JsonConvert.SerializeObject(dic));
-            // var claims = allRoles.Select(x => new Claim(x.Name, userRoles.Contains(x.Name).ToString())).ToList();
 
-            //var claims = new List<Claim> { new Claim(JwtRegisteredClaimNames.UniqueName, appUser.UserName) };
+            var claims = new List<Claim> {
+                new("UserId", appUser.Id.ToString()),
+                new("Email", appUser.Email),
+                new("roles", JsonConvert.SerializeObject(dic))
+            };
 
-            //var identityClaims = appUser.Claims?
-            //    .Where(c => c?.ClaimType != null && c.ClaimValue != null).ToArray();
+            if (!string.IsNullOrEmpty(appUser.LastName)) {
+                claims.Add(new Claim("LastName", appUser.LastName));  
+            }
+            
+            if (!string.IsNullOrEmpty(appUser.FirstName)) {
+                claims.Add(new Claim("FirstName", appUser.FirstName));  
+            }
+            
+            if (!string.IsNullOrEmpty(appUser.MiddleName)) {
+                claims.Add(new Claim("MiddleName", appUser.MiddleName));  
+            }
 
-            //if (identityClaims?.Any() == true)
-            //{
-            //    claims.AddRange(identityClaims.Select(c => new Claim(c.ClaimType, c.ClaimValue)));
-            //}
+            var identityClaims = appUser.Claims?.Where(c => c?.ClaimType != null && c.ClaimValue != null).ToArray();
+
+            if (identityClaims?.Any() == true) {
+                claims.AddRange(identityClaims.Select(c => new Claim(c.ClaimType, c.ClaimValue)));
+            }
 
             #endregion
 
@@ -96,21 +137,21 @@ namespace Demo.WebAPI.Services.BusinessLogic {
 
             var token = encryptCredentials
                 ? tokenHandler.CreateJwtSecurityToken(
-                    issuer: _configuration.GetValue<string>("Tokens:Issuer"),
-                    audience: _configuration.GetValue<string>("Tokens:Audience"),
-                    subject: new ClaimsIdentity(new List<Claim> {claim}),
+                    issuer: configuration.GetValue<string>("Tokens:Issuer"),
+                    audience: configuration.GetValue<string>("Tokens:Audience"),
+                    subject: new ClaimsIdentity(claims),
                     notBefore: utcNow,
-                    expires: utcNow.AddSeconds(_configuration.GetValue<int>("Tokens:AccessTokenLifetime")),
+                    expires: utcNow.AddSeconds(configuration.GetValue<int>("Tokens:AccessTokenLifetime")),
                     issuedAt: utcNow,
                     signingCredentials: signingCredentials,
                     encryptingCredentials: encryptingCredentials
                 )
                 : tokenHandler.CreateJwtSecurityToken(
-                    issuer: _configuration.GetValue<string>("Tokens:Issuer"),
-                    audience: _configuration.GetValue<string>("Tokens:Audience"),
-                    subject: new ClaimsIdentity(new List<Claim> {claim}),
+                    issuer: configuration.GetValue<string>("Tokens:Issuer"),
+                    audience: configuration.GetValue<string>("Tokens:Audience"),
+                    subject: new ClaimsIdentity(claims),
                     notBefore: utcNow,
-                    expires: utcNow.AddSeconds(_configuration.GetValue<int>("Tokens:AccessTokenLifetime")),
+                    expires: utcNow.AddSeconds(configuration.GetValue<int>("Tokens:AccessTokenLifetime")),
                     issuedAt: utcNow,
                     signingCredentials: signingCredentials
                 );

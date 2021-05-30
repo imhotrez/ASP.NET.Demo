@@ -24,6 +24,7 @@
     <Row>
         <Col Span="24" style="align-content: center">
             <Upload Action="https://localhost:5001/api/FileUploadTest/upload"
+                    Headers=@uploadHeadders
                     Name="body"
                     @bind-FileList="filesList"
                     ShowButton="filesList?.Count < 8"
@@ -60,6 +61,7 @@
 
 @code {
     ConcurrentDictionary<long, ImageData> images = new();
+    Dictionary<string, string> uploadHeadders = new();
     List<UploadFileItem> filesList = new();
     bool previewVisible = false;
     string previewTitle = string.Empty;
@@ -69,13 +71,14 @@
         commonStateService.OnChange += StateHasChanged;
         await LoadPreview();
         await LoadOriginal();
+        uploadHeadders.Add("authorization", $"Bearer {commonStateService.AccessToken}");
     }
 
     private async Task LoadOriginal() {
         var headers = new Grpc.Core.Metadata {
             {"Authorization", $"Bearer {commonStateService.AccessToken}"}
         };
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = false}, headers);
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {IsPreview = false}, headers);
         await foreach (var response in call.ResponseStream.ReadAllAsync()) {
             var newImage = new ImageData {
                 FileId = response.FileId,
@@ -98,7 +101,7 @@
             {"Authorization", $"Bearer {commonStateService.AccessToken}"}
         };
 
-        var call = imageTransportServiceClient.FileDownload(new UserInfo {UserId = 1, IsPreview = true}, headers);
+        var call = imageTransportServiceClient.FileDownload(new UserInfo {IsPreview = true}, headers);
         await foreach (var response in call.ResponseStream.ReadAllAsync()) {
             if (images.TryAdd(response.FileId, new ImageData {
                 FileId = response.FileId,

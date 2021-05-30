@@ -11,8 +11,7 @@ service ImageTransportService{
 }
 
 message UserInfo{
-  int64 UserId = 1;
-  bool isPreview = 2;
+  bool isPreview = 1;
 }
 
 message BytesContentUpload{

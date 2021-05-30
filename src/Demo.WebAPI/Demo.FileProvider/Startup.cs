@@ -41,7 +41,6 @@ namespace Demo.FileProvider {
 
             app.UseHttpsRedirection();
             app.UseRouting();
-            //app.UseAuthorization();
 
             app.UseGrpcWeb();
             app.UseCors(DefaultPolicyName);

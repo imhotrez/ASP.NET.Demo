@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,14 +14,17 @@ namespace Demo.SPA.Services {
     public class RestService {
         private readonly HttpClient httpClient;
         private readonly NotificationService notice;
-        public RestService(HttpClient httpClient, NotificationService notice) {
+        private readonly CommonStateService commonStateService;
+        public RestService(HttpClient httpClient, NotificationService notice, CommonStateService commonStateService) {
             this.httpClient = httpClient;
             this.notice = notice;
+            this.commonStateService = commonStateService;
         }
 
         public async Task ExecuteGet(string apiPath, CancellationToken cancellationToken) {
             try {
                 var requestMessage = new HttpRequestMessage(HttpMethod.Get, apiPath);
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commonStateService.AccessToken);
                 requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 await httpClient.SendAsync(requestMessage, cancellationToken);
             } catch (Exception e) {
@@ -36,7 +40,7 @@ namespace Demo.SPA.Services {
                 var requestMessage = new HttpRequestMessage(HttpMethod.Post, apiPath) {
                     Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json")
                 };
-
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commonStateService.AccessToken);
                 requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 var response = await httpClient.SendAsync(requestMessage, cancellationToken);
                 var jsonResult = await response.Content.ReadAsStringAsync(cancellationToken);

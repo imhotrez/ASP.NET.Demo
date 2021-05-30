@@ -21,13 +21,13 @@ namespace Demo.WebAPI.Controllers {
     [AllowAnonymous]
     [Route("api/[controller]")]
     public class AuthController : Controller {
-        private readonly IConfiguration _configuration;
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly JsonWebTokenService _jsonWebTokenService;
-        private readonly RefreshSessionService _refreshSessionService;
-        private readonly EmailService _emailService;
-        private readonly PassGenService _passGenService;
+        private readonly IConfiguration configuration;
+        private readonly SignInManager<AppUser> signInManager;
+        private readonly UserManager<AppUser> userManager;
+        private readonly JsonWebTokenService jsonWebTokenService;
+        private readonly RefreshSessionService refreshSessionService;
+        private readonly EmailService emailService;
+        private readonly PassGenService passGenService;
 
         public AuthController(
             SignInManager<AppUser> signInManager,
@@ -37,13 +37,13 @@ namespace Demo.WebAPI.Controllers {
             IConfiguration configuration,
             EmailService emailService,
             PassGenService passGenService) {
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _jsonWebTokenService = jsonWebTokenService;
-            _refreshSessionService = refreshSessionService;
-            _configuration = configuration;
-            _emailService = emailService;
-            _passGenService = passGenService;
+            this.signInManager = signInManager;
+            this.userManager = userManager;
+            this.jsonWebTokenService = jsonWebTokenService;
+            this.refreshSessionService = refreshSessionService;
+            this.configuration = configuration;
+            this.emailService = emailService;
+            this.passGenService = passGenService;
         }
 
         private async Task<Response<AuthResponse>> BuildAuthResponse(
@@ -53,7 +53,7 @@ namespace Demo.WebAPI.Controllers {
             CancellationToken cancellationToken,
             bool rememberMe = true) {
             var authResponse = new AuthResponse {
-                AccessToken = await _jsonWebTokenService.GetToken(appUser, cancellationToken)
+                AccessToken = await jsonWebTokenService.GetToken(appUser, cancellationToken)
             };
 
             if (!rememberMe) return new Response<AuthResponse>(authResponse);
@@ -67,11 +67,11 @@ namespace Demo.WebAPI.Controllers {
                 ExpiresIn = DateTime.UtcNow.AddSeconds(expiresIn),
             };
 
-            refreshSession = await _refreshSessionService.Save(refreshSession, cancellationToken);
+            refreshSession = await refreshSessionService.Save(refreshSession, cancellationToken);
 
             var cookieOptions = new CookieOptions {
                 HttpOnly = true,
-                Domain = $"{_configuration.GetValue<string>("DomainName")}",
+                Domain = $"{configuration.GetValue<string>("DomainName")}",
                 Path = "/api/auth",
                 SameSite = SameSiteMode.Strict,
                 Expires = refreshSession.ExpiresIn
@@ -99,7 +99,7 @@ namespace Demo.WebAPI.Controllers {
             CancellationToken cancellationToken) {
             if (!ModelState.IsValid) throw new Exception("Отправленные данные не валидны");
 
-            var loginResult = await _signInManager.PasswordSignInAsync(
+            var loginResult = await signInManager.PasswordSignInAsync(
                 userName: loginRequest.Email,
                 password: loginRequest.Password,
                 isPersistent: false,
@@ -107,9 +107,9 @@ namespace Demo.WebAPI.Controllers {
 
             if (!loginResult.Succeeded) throw new Exception("Неверное имя пользователя или пароль");
 
-            var user = await _userManager.FindByEmailAsync(loginRequest.Email);
+            var user = await userManager.FindByEmailAsync(loginRequest.Email);
 
-            var refreshTokenLifetime = _configuration.GetValue<string>("Tokens:RefreshTokenLifetime");
+            var refreshTokenLifetime = configuration.GetValue<string>("Tokens:RefreshTokenLifetime");
 
             if (!int.TryParse(refreshTokenLifetime, out var expiresIn)) expiresIn = 86400 * 30;
 
@@ -133,12 +133,12 @@ namespace Demo.WebAPI.Controllers {
                 throw new Exception("Требуется повторная аутентификация");
             }
 
-            var session = await _refreshSessionService.GetSessionByGuid(refreshToken, cancellationToken);
+            var session = await refreshSessionService.GetSessionByGuid(refreshToken, cancellationToken);
 
             if (session == null) {
                 var cookieOptions = new CookieOptions {
                     HttpOnly = true,
-                    Domain = $"{_configuration.GetValue<string>("DomainName")}",
+                    Domain = $"{configuration.GetValue<string>("DomainName")}",
                     Path = "/api/auth",
                     SameSite = SameSiteMode.Strict,
                     //Expires = refreshSession.ExpiresIn
@@ -152,7 +152,7 @@ namespace Demo.WebAPI.Controllers {
                 throw new Exception("Требуется повторная аутентификация");
             }
 
-            await _refreshSessionService.Remove(session, cancellationToken);
+            await refreshSessionService.Remove(session, cancellationToken);
 
             if (session.ExpiresIn < DateTime.UtcNow) {
                 //throw new Exception("Время жизни refresh-токена истекло");
@@ -167,10 +167,10 @@ namespace Demo.WebAPI.Controllers {
             //TODO Обработать айпишник
             //TODO Обработать User-Agent
 
-            var refreshTokenLifetime = _configuration.GetValue<string>("Tokens:RefreshTokenLifetime");
+            var refreshTokenLifetime = configuration.GetValue<string>("Tokens:RefreshTokenLifetime");
             if (!int.TryParse(refreshTokenLifetime, out var expiresIn)) expiresIn = 86400 * 30;
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
+            var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == session.UserId, cancellationToken);
 
             if (user == null) throw new Exception("Пользователь не найден");
 
@@ -213,12 +213,12 @@ namespace Demo.WebAPI.Controllers {
                 throw new Exception("Требуется повторная аутентификация");
             }
 
-            var session = await _refreshSessionService.GetSessionByGuid(refreshToken, cancellationToken);
+            var session = await refreshSessionService.GetSessionByGuid(refreshToken, cancellationToken);
             if (session == null) {
                 throw new Exception("Требуется повторная аутентификация");
             }
 
-            await _refreshSessionService.Remove(session, cancellationToken);
+            await refreshSessionService.Remove(session, cancellationToken);
             return Ok(ModelState);
         }
 
@@ -235,7 +235,7 @@ namespace Demo.WebAPI.Controllers {
                 return BadRequest(ModelState);
             }
 
-            await _refreshSessionService.TotalLogout(refreshToken, cancellationToken);
+            await refreshSessionService.TotalLogout(refreshToken, cancellationToken);
             return Ok(ModelState);
         }
 
@@ -252,7 +252,7 @@ namespace Demo.WebAPI.Controllers {
                 Email = registerRequest.Email
             };
 
-            var identityResult = await _userManager.CreateAsync(user, registerRequest.Password);
+            var identityResult = await userManager.CreateAsync(user, registerRequest.Password);
             if (!identityResult.Succeeded)
                 return BadRequest(new Response<AuthResponse>(null,
                     identityResult.Errors.Select(x => new WebError {ErrorMessage = x.Description})
@@ -275,14 +275,14 @@ namespace Demo.WebAPI.Controllers {
         [AllowAnonymous]
         public async Task<ActionResult> RestorePassword([FromBody] RestorePasswordRequest restorePasswordRequest,
             CancellationToken cancellationToken) {
-            var user = await _userManager.FindByEmailAsync(restorePasswordRequest.Email);
+            var user = await userManager.FindByEmailAsync(restorePasswordRequest.Email);
 
             //TODO залоггировать попытку ввода не существующего логина
             //|| !await _userManager.IsEmailConfirmedAsync(user)
             if (user == null) return Ok();
             //    throw new Exception($"Пользователь с адресом {restorePasswordRequest.Email} не зарегистрирован");
 
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var code = await userManager.GeneratePasswordResetTokenAsync(user);
 
             var callbackUrl = Url.Action(
                 action: "ResetPassword",
@@ -290,7 +290,7 @@ namespace Demo.WebAPI.Controllers {
                 values: new {userId = user.Id, code},
                 protocol: HttpContext.Request.Scheme);
 
-            await _emailService.SendEmailAsync(
+            await emailService.SendEmailAsync(
                 email: restorePasswordRequest.Email,
                 subject: "Сброс пароля",
                 message: $"Для сброса пароля пройдите по ссылке: <a href='{callbackUrl}'>link</a>",
@@ -304,17 +304,17 @@ namespace Demo.WebAPI.Controllers {
         //[ValidateAntiForgeryToken]
         [Route("ResetPassword")]
         public async Task<IActionResult> ResetPassword(int userId, string code, CancellationToken cancellationToken) {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await userManager.FindByIdAsync(userId.ToString());
             if (user == null) {
                 return View(new ResetPasswordViewModel {Message = "Пользователь не найден"});
             }
 
-            var newPassword = _passGenService.Generate();
+            var newPassword = passGenService.Generate();
 
-            var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
+            var result = await userManager.ResetPasswordAsync(user, code, newPassword);
 
             if (result.Succeeded) {
-                await _emailService.SendEmailAsync(
+                await emailService.SendEmailAsync(
                     email: user.Email,
                     subject: "Новый пароль",
                     message: $"Ваш новый пароль для входа в систему: {newPassword}",

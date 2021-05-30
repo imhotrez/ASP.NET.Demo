@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using AutoMapper;
 using Demo.gRPC.FileTransport;
 using Demo.Helpers;
@@ -39,28 +38,28 @@ namespace Demo.WebAPI {
             Configuration = builder.Build();
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddGrpc();
             services.AddCors(o => o.AddPolicy(DefaultPolicyName, builder => {
-                builder.WithOrigins("https://localhost:5011")
+                builder
+                    .WithOrigins(Configuration["SpaHost"])
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
-                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding", "Authorization")
-                    ;
+                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding", "Authorization");
             }));
 
             #region Add Entity Framework and Identity Framework
 
-            services.AddIdentity<AppUser, AppRole>()
+            services
+                .AddIdentity<AppUser, AppRole>()
                 .AddEntityFrameworkStores<DemoContext>()
                 .AddDefaultTokenProviders();
 
             services.Configure<IdentityOptions>(options => {
-                // Default Password settings.
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonAlphanumeric = false;
@@ -80,7 +79,6 @@ namespace Demo.WebAPI {
 
             #region Получение публичного ассиметричного ключа для подписывания токена
 
-            var curdir = Directory.GetCurrentDirectory();
             var signingPublicKeyPath = Path.Combine(
                 path1: Directory.GetCurrentDirectory(),
                 path2: "Keys",
@@ -96,14 +94,14 @@ namespace Demo.WebAPI {
 
             #region Получение секретного симметричного ключа для шифрования утверждений (claim)
 
-            var encodingSecurityKeyPath = Path.Combine(
-                path1: Directory.GetCurrentDirectory(),
-                path2: "Keys",
-                path3: Configuration["Tokens:EncodingSecretKey"]);
+            // var encodingSecurityKeyPath = Path.Combine(
+            //     path1: Directory.GetCurrentDirectory(),
+            //     path2: "Keys",
+            //     path3: Configuration["Tokens:EncodingSecretKey"]);
 
-            var key = File.ReadAllText(encodingSecurityKeyPath);
+            // var key = File.ReadAllText(encodingSecurityKeyPath);
 
-            var encodingSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            // var encodingSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 
             #endregion
 
@@ -152,7 +150,7 @@ namespace Demo.WebAPI {
 
             services.AddGrpcClient<FileTransportService.FileTransportServiceClient>(o =>
             {
-                o.Address = new Uri("https://localhost:5009");
+                o.Address = new Uri(Configuration["FileProviderServiceHost"]);
             });
 
             services.AddControllers();
@@ -171,7 +169,7 @@ namespace Demo.WebAPI {
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }

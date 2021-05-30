@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.gRPC.FileTransport;
 using Demo.Models.Dto;
+using Demo.WebAPI.Services.BusinessLogic;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using FileProviderService = Demo.WebAPI.Services.DataAccess.FileProviderService;
 
 namespace Demo.WebAPI.Controllers {
@@ -14,9 +14,12 @@ namespace Demo.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class FileUploadTestController : ControllerBase {
         private readonly FileProviderService fileProviderService;
+        private readonly JsonWebTokenService jsonWebTokenService;
 
-        public FileUploadTestController(FileProviderService fileProviderService) {
+        public FileUploadTestController(FileProviderService fileProviderService,
+            JsonWebTokenService jsonWebTokenService) {
             this.fileProviderService = fileProviderService;
+            this.jsonWebTokenService = jsonWebTokenService;
         }
 
         [Route("upload")]
@@ -24,23 +27,22 @@ namespace Demo.WebAPI.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Upload([FromForm] UploadImageDto uploadImage,
             CancellationToken cancellationToken) {
-            var state = ModelState;
-            // TODO Реализовать получение ID пользователя
-            var result = await fileProviderService.SaveFile(uploadImage, 1, cancellationToken);
-            return Ok("Good"
-                //result
-                );
-        }
 
-        [Route("download/{id}")]
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> Download(long id, CancellationToken cancellationToken) {
-            var state = ModelState;
-            // TODO Реализовать получение ID пользователя
-            var result = await fileProviderService.DownloadFile(id, ImageType.Preview, cancellationToken);
-            var stream = new MemoryStream(result.Body);
-            return File(stream, "application/octet-stream", result.Name);
+            if (!ModelState.IsValid) {
+                throw new Exception("Модель загружаемой картинки не валидна");
+            }
+            
+            if (!HttpContext.Request.Headers.TryGetValue("authorization", out var jwt)) {
+                throw new Exception("Не удалось получить токен безопасности");
+            }
+
+            var stringUserId = jsonWebTokenService.GetClaimValue(jwt.ToString()[7..], "UserId");
+            if (!long.TryParse(stringUserId, out var userId)) {
+                throw new Exception("Не удалось определить идентификатор пользователя");
+            }
+
+            var result = await fileProviderService.SaveFile(uploadImage, userId, cancellationToken);
+            return Ok(result);
         }
     }
 }
